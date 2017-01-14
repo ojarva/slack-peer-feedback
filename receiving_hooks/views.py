@@ -8,6 +8,7 @@ from django.core.exceptions import PermissionDenied
 import re
 from teams.models import Feedback, SlackUser
 from django.views.decorators.csrf import csrf_exempt
+from django.template.loader import render_to_string
 
 
 def parse_new_feedback_input(text):
@@ -34,6 +35,10 @@ def new_feedback(request):
     feedback_sender = SlackUser.objects.get(user_id=request.POST.get("user_id"))
 
     text = request.POST.get("text")
+    if text == "list":
+        feedbacks = Feedback.objects.filter(recipient=feedback_sender).filter(cancelled=False).exclude(delivered=None)
+        feedback_text = render_to_string("feedback_list.txt", {"feedbacks": feedbacks})
+        return HttpResponse(json.dumps({"text": feedback_text, "response_type": "ephemeral"}), content_type="application/json")
     recipients, feedback = parse_new_feedback_input(text)
     if len(text) > 0 and len(recipients) == 0:
         return HttpResponse(json.dumps({"text": """Hmm, I couldn't parse the feedback. Use any of these:

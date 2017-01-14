@@ -32,7 +32,9 @@ def receive_interactive_command(request):
         response["text"] = "Ok, thanks! This information will be available for the person who gave the feedback to you."
     elif requested_action == "didnt_understand":
         feedback.update(flagged_difficult_to_understand=True)
-        resposne["text"] = "Ok, thanks for the information! This will be available for the person who gave the feedback for you - hopefully they will clarify what they meant."
+        response["text"] = "Ok, thanks for the information! This will be available for the person who gave the feedback for you - hopefully they will clarify what they meant."
+    elif requested_action == "feedback_received":
+        response["text"] = "You can view feedbacks you have received with /peer_feedback list"
     elif requested_action == "add_name":
         feedback.update(anonymous=False)
         response["attachments"] = [{

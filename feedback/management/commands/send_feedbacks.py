@@ -41,6 +41,12 @@ class Command(BaseCommand):
                                 "type": "button",
                                 "value": "didnt_understand"
                             },
+                            {
+                                "name": "feedback_received",
+                                "text": "Ok, thanks.",
+                                "type": "button",
+                                "value": "feedback_received"
+                            }
                         ]
                     }
                 ])

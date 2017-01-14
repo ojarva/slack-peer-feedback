@@ -1,0 +1,7 @@
+{% load humanize %}
+{% if feedbacks %}*Recent feedback you have received:*
+{% for feedback in feedbacks %}
+• {{ feedback.feedback }} from {% if feedback.anonymous %}anonymous colleague{% else %}{{ feedback.sender.real_name }} (@{{feedback.sender.name}}){% endif %}
+{% endfor %}
+{% else %}You have not received any feedback - yet.
+{% endif %}
