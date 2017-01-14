@@ -1,0 +1,7 @@
+{
+  "name": "Peer feedback",
+  "description": "",
+  "image": "heroku/python",
+  "keywords": ["python", "django" ],
+  "addons": [ "heroku-postgresql", "heroku-redis" ]
+}
