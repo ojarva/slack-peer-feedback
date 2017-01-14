@@ -60,7 +60,7 @@ def new_feedback(request):
     if len(feedback) > 0 and len(recipients) > 0:
         return HttpResponse(json.dumps({"text": "Got it. Your feedback will be delivered anonymously to %s" % recipients_text, "attachments": [{
             "text": " This feedback will be delivered anonymously to %s. Do you want to take any other actions?" % recipients_text,
-            "fallback": "Sorry, can't - something went wrong.",
+            "fallback": "Edit your feedback.",
             "callback_id": callback_id,
             "color": "#3AA3E3",
             "attachment_type": "default",

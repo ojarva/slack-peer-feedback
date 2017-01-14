@@ -25,7 +25,7 @@ def receive_interactive_command(request):
     if requested_action == "add_name":
         feedback.update(anonymous=False)
         response["attachments"] = [{
-            "fallback": "Sorry, can't - something went wrong.",
+            "fallback": "Edit your feedback.",
             "callback_id": callback_id,
             "color": "#3AA3E3",
             "attachment_type": "default",
@@ -50,7 +50,7 @@ def receive_interactive_command(request):
         feedback.update(cancelled=True)
         response["text"] = "Ok, your feedback has been cancelled."
         response["attachments"] = [{
-            "fallback": "Sorry, can't - something went wrong.",
+            "fallback": "Edit your feedback.",
             "callback_id": callback_id,
             "color": "#3AA3E3",
             "attachment_type": "default",
@@ -95,7 +95,7 @@ def receive_interactive_command(request):
                 }
             })
         response["attachments"] = [{
-            "fallback": "Sorry, can't - something went wrong.",
+            "fallback": "Edit your feedback.",
             "callback_id": callback_id,
             "color": "#3AA3E3",
             "attachment_type": "default",
