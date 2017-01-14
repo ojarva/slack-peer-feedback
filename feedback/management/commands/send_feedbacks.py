@@ -19,11 +19,29 @@ class Command(BaseCommand):
                 slack = slacker.Slacker(authorization_data.bot_access_token)
                 title = None
                 if not feedback.anonymous:
-                    title = "Feedback from %s (%s)" % (feedback.sender.real_name, feedback.sender.name)
+                    title = "Feedback from %s (@%s)" % (feedback.sender.real_name, feedback.sender.name)
                 slack.chat.post_message(feedback.recipient.user_id, "You have new feedback", attachments=[
                     {
                         "title": title,
-                        "text": feedback.feedback
+                        "text": feedback.feedback,
+                        "fallback": "Respond to your feedback.",
+                        "callback_id": "reply-%s" % feedback.feedback_id,
+                        "color": "#3AA3E3",
+                        "attachment_type": "default",
+                        "actions": [
+                            {
+                                "name": "flag_helpful",
+                                "text": "Send thanks",
+                                "type": "button",
+                                "value": "flag_helpful"
+                            },
+                            {
+                                "name": "didnt_understand",
+                                "text": "Didn't understand",
+                                "type": "button",
+                                "value": "didnt_understand"
+                            },
+                        ]
                     }
                 ])
                 feedback.delivered = now

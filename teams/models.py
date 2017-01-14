@@ -66,5 +66,8 @@ class Feedback(models.Model):
     given = models.DateTimeField(auto_now_add=True)
     delivered = models.DateTimeField(null=True, blank=True)
 
+    flagged_helpful = models.BooleanField(blank=True, default=False)
+    flagged_difficult_to_understand = models.BooleanField(blank=True, default=False)
+
     response_url = models.CharField(max_length=1024, null=True, blank=True)
     response_url_valid_until = models.DateTimeField(null=True, blank=True)

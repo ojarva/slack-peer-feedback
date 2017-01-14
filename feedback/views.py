@@ -15,14 +15,25 @@ def receive_interactive_command(request):
     if action["token"] != settings.VERIFICATION_TOKEN:
         raise PermissionDenied
     callback_id = action["callback_id"]
-    if callback_id.startswith("group-"):
-        feedback = Feedback.objects.filter(feedback_group_id=callback_id.replace("group-", ""))
+
+    if callback_id.startswith("reply-"):
+        feedback = Feedback.objects.filter(feedback_id=callback_id.replace("reply-", ""))
     else:
-        feedback = Feedback.objects.filter(feedback_id=callback_id.replace("item-", ""))
-    feedback.update(response_url=action["response_url"])
+        if callback_id.startswith("group-"):
+            feedback = Feedback.objects.filter(feedback_group_id=callback_id.replace("group-", ""))
+        elif callback_id.startswith("item-"):
+            feedback = Feedback.objects.filter(feedback_id=callback_id.replace("item-", ""))
+        feedback.update(response_url=action["response_url"])
+
     requested_action = action["actions"][0]["name"]
     response = {"replace_original": True, "response_type": "ephemeral"}
-    if requested_action == "add_name":
+    if requested_action == "flag_helpful":
+        feedback.update(flagged_helpful=True)
+        response["text"] = "Ok, thanks! This information will be available for the person who gave the feedback to you."
+    elif requested_action == "didnt_understand":
+        feedback.update(flagged_difficult_to_understand=True)
+        resposne["text"] = "Ok, thanks for the information! This will be available for the person who gave the feedback for you - hopefully they will clarify what they meant."
+    elif requested_action == "add_name":
         feedback.update(anonymous=False)
         response["attachments"] = [{
             "fallback": "Edit your feedback.",
