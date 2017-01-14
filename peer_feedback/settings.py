@@ -6,17 +6,21 @@ import dj_database_url
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/1.8/howto/deployment/checklist/
-
-# SECURITY WARNING: change this before deploying to production!
-SECRET_KEY = 'i+acxn5(akgsn!sr4^qgf(^m&*@+g1@u^t@=8s@axc41ml*f=s'
+SECRET_KEY = os.environ["SECRET_KEY"]
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 SLACK_TOKEN = os.environ["SLACK_TOKEN"]
+
+CLIENT_ID = os.environ["CLIENT_ID"]
+CLIENT_SECRET = os.environ["CLIENT_SECRET"]
+
+USER_LINK_SECRET = os.environ["USER_LINK_SECRET"]
+OAUTH_CALLBACK = os.environ["OAUTH_CALLBACK"]
+
+USER_LOGIN_CALLBACK = os.environ["USER_LOGIN_CALLBACK"]
+VERIFICATION_TOKEN = os.environ["VERIFICATION_TOKEN"]
 
 # Application definition
 
@@ -27,8 +31,13 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'receiving_hooks'
+    'receiving_hooks',
+    'oauth_handlers',
+    'teams',
+    'feedback',
 )
+
+SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
 
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',

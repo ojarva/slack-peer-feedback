@@ -1,0 +1,15 @@
+<a href="{% url 'create_new_team' %}">Create new team</a>
+<table>
+  <thead>
+    <tr>
+      <th>Team name</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for team in teams %}
+    <tr>
+      <td>{{ team.name }}
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
