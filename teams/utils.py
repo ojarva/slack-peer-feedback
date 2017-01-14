@@ -19,6 +19,7 @@ def refresh_slack_users(team_id):
             "tz": user.get("tz"),
             "email": profile.get("email"),
             "image_192": profile.get("image_192"),
+            "image_192": profile.get("image_24"),
             "tz_offset": user.get("tz_offset"),
         }
         SlackUser.objects.update_or_create(user_id=user["id"], defaults=data)

@@ -33,6 +33,7 @@ class SlackUser(models.Model):
     user_id = models.CharField(primary_key=True, max_length=50)
     email = models.CharField(max_length=255, null=True, blank=True)
     image_192 = models.CharField(max_length=1024, null=True, blank=True)
+    image_24 = models.CharField(max_length=1024, null=True, blank=True)
 
     def __unicode__(self):
         return u"%s (@%s)" % (self.real_name, self.name)
