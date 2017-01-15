@@ -3,7 +3,7 @@ from django.conf import settings
 import json
 import pprint
 import uuid
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseBadRequest
 from django.core.exceptions import PermissionDenied
 import re
 from teams.models import Feedback, SlackUser
@@ -28,11 +28,19 @@ def parse_new_feedback_input(text):
 
 @csrf_exempt
 def incoming_event(request):
-    pprint.pprint(request.POST)
-    if request.POST.get("token") != settings.VERIFICATION_TOKEN:
+    data = json.loads(request.body)
+    pprint.pprint(data)
+
+    if not isinstance(data, dict):
+        return HttpResponseBadRequest("Expected application/json body, got something else.")
+
+    if data.get("token") != settings.VERIFICATION_TOKEN:
         raise PermissionDenied
-    if request.POST.get("type") == "url_verification":
-        return HttpResponse(json.dumps({"challenge": request.POST.get("challenge")}), content_type="application/json")
+    event_type = data.get("type")
+    if event_type == "url_verification":
+        return HttpResponse(json.dumps({"challenge": data.get("challenge")}), content_type="application/json")
+    if event_type == "user_change":
+        return HttpResponse()
 
 
 @csrf_exempt
