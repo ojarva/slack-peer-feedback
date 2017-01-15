@@ -7,6 +7,10 @@ from django.core.exceptions import PermissionDenied
 from teams.models import SlackUser, Feedback
 import json
 
+def leave_new_feedback_page(request):
+    return render(request, "new_feedback.html")
+
+
 @csrf_exempt
 def receive_interactive_command(request):
     pprint.pprint(request.POST)
