@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+
+<div class="row">
+  <div class="col-md-12">
+<h1>Feedback</h1>
+{% if feedbacks %}
+{% for feedback in feedbacks %}
+  <blockquote>
+    <p>{{ feedback.feedback }}</p>
+    <footer>{% if not feedback.anonymous %}<a href="https://{{ slack_user.slack_team.team_name }}.slack.com/messages/@{{ feedback.sender.name }}/">{% if feedback.get_author_icon %}<img src="{{ feedback.get_author_icon}}" />{% endif %}{{ feedback.get_author_name }}</a>{% else %}{{ feedback.get_author_name}}{% endif %} {{ feedback.given | naturaltime }}</footer>
+  </blockquote>
+{% endfor %}
+{% else %}
+<p>You don't have any feedback - yet. Make someone else happy by <a href="{% url "new_feedback" %}">giving them feedback</a>. Can't decide what and who? <a href="{% url "new_feedback_random" %}">Random recipient and random question</a></p>
+{% endif %}
+</div>
+</div>
+{% endblock %}

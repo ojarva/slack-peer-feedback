@@ -21,18 +21,45 @@
     <link href="/static/css/tokenfield-typeahead.css" rel="stylesheet">
     <link href="/static/css/bootstrap-tokenfield.css" type="text/css" rel="stylesheet">
     <link href="/static/css/typeahead.css" type="text/css" rel="stylesheet">
+    <link href="/static/css/custom.css" type="text/css" rel="stylesheet">
 
 
     <script type="text/javascript" src="//code.jquery.com/jquery-1.9.1.js"></script>
     <script type="text/javascript" src="//code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+    <script src="/static/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="/static/js/bootstrap-tokenfield.js" charset="UTF-8"></script>
     <script type="text/javascript" src="/static/js/typeahead.bundle.min.js" charset="UTF-8"></script>
     {% block head %}{% endblock %}
   </head>
 
   <body>
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="{% url "dashboard" %}">Peer Feedback</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="{% url "new_feedback" %}">Leave new feedback</a></li>
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{% if slack_user %}{% if slack_user.image_24 %}<img src="{{ slack_user.image_24 }}"> {% endif %}{{ slack_user.real_name }}{% else %}Profile{% endif %} <span class="caret"></span></a>
+              <ul class="dropdown-menu">
+                <li><a href="{% url "logout" %}">Logout</a></li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
 
-    <div class="container">
+    <div class="container" role="main">
+
 {% block content %}{% endblock %}
     </div> <!-- /container -->
 

@@ -1,5 +1,6 @@
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
+from django.core.urlresolvers import reverse
 from django.core.exceptions import PermissionDenied
 
 import pprint
@@ -14,7 +15,6 @@ def oauth_authorization_url(scopes, redirect_uri):
 def request_oauth_data(code, redirect_uri):
     resp = requests.get("https://slack.com/api/oauth.access", {"client_id": settings.CLIENT_ID, "client_secret": settings.CLIENT_SECRET, "code": code, "redirect_uri": redirect_uri})
     auth = resp.json()
-    print auth
     if not auth["ok"]:
         raise PermissionDenied
     return auth
@@ -42,13 +42,23 @@ def oauth_callback(request):
     return HttpResponse("ok")
 
 def user_login(request):
-    return HttpResponse(oauth_authorization_url("identity.basic", settings.USER_LOGIN_CALLBACK))
+    context = {
+        "oauth_authorization_url": oauth_authorization_url("identity.basic", settings.USER_LOGIN_CALLBACK),
+    }
+    if request.session.get("authenticated_by") == "slack_login":
+        return HttpResponseRedirect(reverse("dashboard"))
+    return render(request, "login.html", context)
 
 def user_login_callback(request):
     code = request.GET.get("code")
     auth = request_oauth_data(code, settings.USER_LOGIN_CALLBACK)
-    print auth
     request.session["user_id"] = auth["user"]["id"]
     request.session["team_id"] = auth["team"]["id"]
-    print request.session
-    return HttpResponse("ok")
+    request.session["authenticated_by"] = "slack_login"
+    return HttpResponseRedirect(reverse("dashboard"))
+
+def logout(request):
+    request.session["user_id"] = None
+    request.session["team_id"] = None
+    request.session["authenticated_by"] = None
+    return HttpResponseRedirect(reverse("login"))

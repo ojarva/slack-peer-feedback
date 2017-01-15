@@ -86,6 +86,9 @@ class Feedback(models.Model):
     response_url = models.CharField(max_length=1024, null=True, blank=True)
     response_url_valid_until = models.DateTimeField(null=True, blank=True)
 
+    class Meta:
+        ordering = ("-given", )
+
     def __unicode__(self):
         return u"Feedback for %s by %s" % (self.recipient, self.get_author_name())
 

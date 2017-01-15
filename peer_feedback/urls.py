@@ -16,16 +16,19 @@ urlpatterns = [
     url(r'^oauth_authorize', oauth_handlers.views.gen_oauth_authorization_url),
     url(r'^oauth_callback', oauth_handlers.views.oauth_callback),
     url(r'^login', oauth_handlers.views.user_login, name="login"),
+    url(r'^logout', oauth_handlers.views.logout, name="logout"),
     url(r'^user_oauth_callback', oauth_handlers.views.user_login_callback),
 
-    url(r'^teams/$', teams.views.teams),
+    url(r'^teams$', teams.views.teams),
     url(r'^team/(?P<team_id>[0-9+])$', teams.views.team_edit),
     url(r'^teams/create', teams.views.create_new_team, name='create_new_team'),
 
     url(r'^api/slack/members$', teams.views.get_team_members),
     url(r'^api/slack/members/simple$', teams.views.get_team_members, kwargs={"list": True}),
 
-    url(r'^new_feedback/$', feedback.views.leave_new_feedback_page, name='new_feedback'),
+    url(r'^new_feedback$', feedback.views.leave_new_feedback_page, name='new_feedback'),
+    url(r'^new_feedback/random$', feedback.views.leave_new_feedback_page, name='new_feedback_random', kwargs={"random": True}),
     url(r'^feedback_received$', feedback.views.feedback_received, name='feedback_received'),
+    url(r'^$', feedback.views.dashboard, name='dashboard'),
     url(r'^admin/', include(admin.site.urls)),
 ]

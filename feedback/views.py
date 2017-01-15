@@ -7,14 +7,27 @@ from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from teams.models import SlackUser, Feedback
 import json
-from teams.models import SlackUser, Feedback
-from utils import verify_arguments
+from utils import verify_arguments, get_random_question, get_random_recipient
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 import re
 import uuid
 
-def leave_new_feedback_page(request):
+
+
+def dashboard(request):
+    if not request.session.get("user_id") or request.session.get("authenticated_by") != "slack_login":
+        return HttpResponseRedirect(reverse("login"))
+    slack_user = SlackUser.objects.get(user_id=request.session.get("user_id"))
+    feedbacks = Feedback.objects.filter(recipient=slack_user).filter(cancelled=False).exclude(delivered=None)
+    context = {
+        "slack_user": slack_user,
+        "feedbacks": feedbacks,
+    }
+    return render(request, "dashboard.html", context)
+
+
+def leave_new_feedback_page(request, **kwargs):
     token = request.GET.get("token")
     context = {}
     if token:
@@ -23,13 +36,17 @@ def leave_new_feedback_page(request):
         expires_at = parse_datetime(request.GET.get("expires_at"))
         if expires_at < timezone.now():
             raise PermissionDenied
-        request.session["user_id"] = request.GET.get("sender_id")
+
+        if "user_id" not in request.session:
+            request.session["user_id"] = request.GET.get("sender_id")
+            request.session["team_id"] = request.GET.get("sender_team_id")
+            request.session["authenticated_by"] = "link_auth"
         context["expires_at"] = expires_at
         recipient_ids = request.GET.get("recipients", "")
         context["recipients"] = SlackUser.objects.filter(user_id__in=recipient_ids.split(","))
         context["recipient_ids"] = recipient_ids
 
-    if not request.session.get("user_id"):
+    if not request.session.get("user_id") or not request.session.get("team_id"):
         return HttpResponseRedirect(reverse("login"))
 
     sender = SlackUser.objects.get(user_id=request.session.get("user_id"))
@@ -55,6 +72,11 @@ def leave_new_feedback_page(request):
             feedback = Feedback(feedback_group_id=feedback_group_id, recipient=recipient, sender=sender, feedback=request.POST.get("feedback_text"))
             feedback.save()
         return HttpResponseRedirect(reverse("feedback_received"))
+
+    if kwargs.get("random"):
+        context["question"] = get_random_question()
+        context["recipients"] = [get_random_recipient(request.session.get("team_id"))]
+        context["recipient_ids"] = ",".join(map(lambda k: k.user_id, context["recipients"]))
     return render(request, "new_feedback.html", context)
 
 

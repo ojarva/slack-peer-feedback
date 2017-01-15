@@ -23,11 +23,16 @@
               Feedback for <b>{% for recipient in recipients %}{{ recipient.get_full_name }} {% endfor %}</b> <small><a href="{% url 'new_feedback' %}">Someone else on your mind?</a></small>
               <input type="hidden" name="recipient_ids" value="{{ recipient_ids }}">
             {% else %}
+            <label for="recipient">Recipient</label>
             <input type="text" class="form-control typeahead" id="recipient" name="recipient" value="" />
             {% endif %}
           </div>
           <div class="form-group">
-            <textarea class="form-control input-lg" rows="5" name="feedback_text"></textarea>
+            <label for="feedback_text">{% if question %}{{ question }}{% else %}Your feedback{% endif %}</label>
+            {% if question %}
+            <input type="hidden" name="question" value="{{ question }}">
+            {% endif %}
+            <textarea class="form-control input-lg" rows="5" name="feedback_text" id="feedback_text"></textarea>
           </div>
           <div class="form-group">
             <button class="btn btn-lg btn-success" href="#" role="button">Send your feedback</button>

@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<div class="jumbotron">
+  <a href="{{ oauth_authorization_url }}"><img src="https://api.slack.com/img/sign_in_with_slack.png" /></a>
+</div>
+{% endblock %}
