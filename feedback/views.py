@@ -1,6 +1,6 @@
 from django.shortcuts import render
 import pprint
-from django.http import HttpResponse, HttpResponseRedirect, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseBadRequest, HttpResponseNotFound, HttpResponseForbidden
 from django.core.urlresolvers import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
@@ -19,12 +19,51 @@ def dashboard(request):
     if not request.session.get("user_id") or request.session.get("authenticated_by") != "slack_login":
         return HttpResponseRedirect(reverse("login"))
     slack_user = SlackUser.objects.get(user_id=request.session.get("user_id"))
-    feedbacks = Feedback.objects.filter(recipient=slack_user).filter(cancelled=False).exclude(delivered=None)
+    feedbacks = Feedback.objects.filter(recipient=slack_user).filter(cancelled=False).exclude(delivered=None).filter(reply_to=None)
     context = {
         "slack_user": slack_user,
         "feedbacks": feedbacks,
     }
     return render(request, "dashboard.html", context)
+
+
+def single_feedback(request, feedback_id):
+    if not request.session.get("user_id") or request.session.get("authenticated_by") != "slack_login":
+        return HttpResponseRedirect(reverse("login"))
+
+    slack_user = SlackUser.objects.get(user_id=request.session.get("user_id"))
+    feedback = Feedback.objects.get(feedback_id=feedback_id)
+    context = {
+        "slack_user": slack_user
+    }
+    if slack_user == feedback.recipient:
+        context["anonymous"] = False
+    elif slack_user == feedback.sender:
+        context["anonymous"] = feedback.anonymous
+    else:
+        return HttpResponseForbidden("This is not your feedback.")
+
+    if feedback.cancelled:
+        return HttpResponseNotFound("Feedback does not exist.")
+
+    if request.method == "POST":
+        feedback_text = request.POST.get("feedback")
+        if slack_user == feedback.recipient:
+            feedback_recipient = feedback.sender
+        else:
+            feedback_recipient = feedback.recipient
+        feedback_reply = Feedback(feedback=feedback_text, reply_to=feedback, sender=slack_user, recipient=feedback_recipient, anonymous=context["anonymous"])
+        feedback_reply.save()
+        feedback_reply.send_notification()
+        return HttpResponseRedirect(reverse("single_feedback", args=(feedback_id,)))
+
+    feedbacks = []
+    reply_exists = True
+    feedbacks.append(feedback)
+    feedbacks.extend(Feedback.objects.filter(reply_to=feedback).filter(cancelled=False).exclude(delivered=None).order_by("given"))
+
+    context["feedbacks"] = feedbacks
+    return render(request, "single_feedback.html", context)
 
 
 def leave_new_feedback_page(request, **kwargs):
@@ -59,7 +98,6 @@ def leave_new_feedback_page(request, **kwargs):
             recipients = SlackUser.objects.filter(user_id__in=recipient_ids)
         else:
             recipients = request.POST.get("recipient")
-            print recipients
             components = re.match(r"^(?P<real_name>(.*)) \(@(?P<name>([A-Za-z0-9-_]+))\)$", recipients)
             if not components:
                 return HttpResponseBadRequest("Invalid recipient data")

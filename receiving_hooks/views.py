@@ -1,7 +1,6 @@
 from django.shortcuts import render
 from django.conf import settings
 import json
-import pprint
 import uuid
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.core.exceptions import PermissionDenied
@@ -50,7 +49,6 @@ def incoming_slack_event(request):
 
 @csrf_exempt
 def peer_feedback_handler(request):
-    pprint.pprint(request.POST)
     if request.POST.get("token") != settings.VERIFICATION_TOKEN:
         raise PermissionDenied
 

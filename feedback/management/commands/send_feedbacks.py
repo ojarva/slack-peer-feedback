@@ -3,6 +3,8 @@ import datetime
 from teams.models import Feedback
 from oauth_handlers.models import AuthorizationData
 from django.utils import timezone
+from django.core.urlresolvers import reverse
+from django.conf import settings
 import datetime
 import requests
 import slacker
@@ -17,43 +19,12 @@ class Command(BaseCommand):
         per_recipient_feedbacks = {}
 
         for feedback in Feedback.objects.filter(delivered=None).filter(cancelled=False):
-            if now - feedback.given > datetime.timedelta(minutes=8):
+            if now - feedback.given > datetime.timedelta(minutes=0):
                 recipient_id = feedback.recipient.user_id
                 if recipient_id not in per_recipient_feedbacks:
                     authorization_data = AuthorizationData.objects.get(team_id=feedback.recipient.slack_team.team_id)
                     per_recipient_feedbacks[recipient_id] = {"recipient": feedback.recipient, "authorization_data": authorization_data, "items": []}
-
-                per_recipient_feedbacks[recipient_id]["items"].append(
-                    {
-                        "author_name": feedback.get_author_name(),
-                        "author_icon": feedback.get_author_icon(),
-                        "text": feedback.feedback,
-                        "fallback": "Respond to your feedback.",
-                        "callback_id": "reply-%s" % feedback.feedback_id,
-                        "color": "#3AA3E3",
-                        "attachment_type": "default",
-                        "actions": [
-                            {
-                                "name": "flag_helpful",
-                                "text": "Send thanks",
-                                "type": "button",
-                                "value": "flag_helpful"
-                            },
-                            {
-                                "name": "didnt_understand",
-                                "text": "Didn't understand",
-                                "type": "button",
-                                "value": "didnt_understand"
-                            },
-                            {
-                                "name": "feedback_received",
-                                "text": "Ok, dismiss.",
-                                "type": "button",
-                                "value": "feedback_received"
-                            }
-                        ]
-                    }
-                )
+                per_recipient_feedbacks[recipient_id]["items"].append(feedback.get_slack_notification())
                 feedback.delivered = now
                 feedback.save()
                 if feedback.response_url:

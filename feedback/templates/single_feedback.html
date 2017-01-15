@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block content %}
+{% if not feedbacks.0.anonymous %}
+<div class="row">
+  <p><a class="btn btn-info" href="https://{{ slack_user.slack_team.team_name }}.slack.com/messages/@{{ feedback.0.sender.name }}/">Open a direct messages in Slack</a></p>
+</div>
+{% endif %}
+<div class="row">
+  <div class="col-md-12">
+    {% for feedback in feedbacks %}
+      <blockquote class="{% if feedback.sender == slack_user %}blockquote-reverse{% endif %}">
+        <p>{{ feedback.feedback }}</p>
+        <footer>{% if not feedback.anonymous %}<a href="https://{{ slack_user.slack_team.team_name }}.slack.com/messages/@{{ feedback.sender.name }}/">{% if feedback.get_author_icon %}<img src="{{ feedback.get_author_icon}}" />{% endif %}{{ feedback.get_author_name }}</a>{% else %}{% if feedback.sender == slack_user %}You{% else %}{{ feedback.get_author_name}}{% endif %}{% endif %} {{ feedback.given | naturaltime }}</footer>
+      </blockquote>
+    {% endfor %}
+    <blockquote class="blockquote-reverse">
+      <form class="" method="post">
+        {% csrf_token %}
+        <div class="form-group">
+          <textarea rows="3" name="feedback" id="feedback" placeholder="Your reply ({% if not anonymous %}non-{% endif %}anonymous)"></textarea>
+        </div>
+        <div class="form-group">
+          <button type="submit" class="btn btn-primary">Reply</button>
+        </div>
+      </form>
+    </blockquote>
+  </div>
+</div>
+{% endblock %}

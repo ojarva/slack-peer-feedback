@@ -10,7 +10,7 @@
     {% for feedback in feedbacks %}
       <blockquote>
         <p>{{ feedback.feedback }}</p>
-        <footer>{% if not feedback.anonymous %}<a href="https://{{ slack_user.slack_team.team_name }}.slack.com/messages/@{{ feedback.sender.name }}/">{% if feedback.get_author_icon %}<img src="{{ feedback.get_author_icon}}" />{% endif %}{{ feedback.get_author_name }}</a>{% else %}{{ feedback.get_author_name}}{% endif %} {{ feedback.given | naturaltime }}</footer>
+        <footer>{% if not feedback.anonymous %}<a href="https://{{ slack_user.slack_team.team_name }}.slack.com/messages/@{{ feedback.sender.name }}/">{% if feedback.get_author_icon %}<img src="{{ feedback.get_author_icon}}" />{% endif %}{{ feedback.get_author_name }}</a>{% else %}{{ feedback.get_author_name}}{% endif %} {{ feedback.given | naturaltime }} - <a href="{% url 'single_feedback' feedback.feedback_id %}">View</a></footer>
       </blockquote>
     {% endfor %}
     {% else %}

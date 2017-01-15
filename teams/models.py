@@ -1,7 +1,12 @@
 from __future__ import unicode_literals
 
+from django.conf import settings
 from django.db import models
 import uuid
+from django.core.urlresolvers import reverse
+from django.utils import timezone
+from oauth_handlers.models import AuthorizationData
+import slacker
 
 class Team(models.Model):
     name = models.CharField(max_length=50)
@@ -103,3 +108,51 @@ class Feedback(models.Model):
         if self.anonymous:
             return None
         return self.sender.image_24
+
+    def get_slack_notification(self):
+        pre_text = ""
+        if self.reply_to:
+            parent_feedback = self.reply_to
+            pre_text = "%s replied to your feedback:\n" % self.get_author_name()
+        else:
+            parent_feedback = self
+        feedback_url = "%s%s" % (settings.WEB_ROOT, reverse("single_feedback", args=(parent_feedback.feedback_id,)).strip("/"))
+        return {
+            "author_name": self.get_author_name(),
+            "author_icon": self.get_author_icon(),
+            "text": "%s%s\n\n<%s|View or reply to feedback>" % (pre_text, self.feedback, feedback_url),
+            "fallback": "Respond to your feedback.",
+            "callback_id": "reply-%s" % self.feedback_id,
+            "color": "#3AA3E3",
+            "mrkdwn_in": ["text"],
+            "attachment_type": "default",
+            "actions": [
+                {
+                    "name": "flag_helpful",
+                    "text": "Send thanks",
+                    "type": "button",
+                    "value": "flag_helpful"
+                },
+                {
+                    "name": "didnt_understand",
+                    "text": "Didn't understand",
+                    "type": "button",
+                    "value": "didnt_understand"
+                },
+                {
+                    "name": "feedback_received",
+                    "text": "Ok, dismiss.",
+                    "type": "button",
+                    "value": "feedback_received"
+                }
+            ]
+        }
+
+    def send_notification(self):
+        if self.delivered:
+            return False
+        self.delivered = timezone.now()
+        self.save()
+        authorization_data = AuthorizationData.objects.get(team_id=self.recipient.slack_team.team_id)
+        slack = slacker.Slacker(authorization_data.bot_access_token)
+        slack.chat.post_message(self.recipient.user_id, "You have new feedback", attachments=[self.get_slack_notification()])

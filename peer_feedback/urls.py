@@ -26,6 +26,7 @@ urlpatterns = [
     url(r'^api/slack/members$', teams.views.get_team_members),
     url(r'^api/slack/members/simple$', teams.views.get_team_members, kwargs={"list": True}),
 
+    url(r'^feedback/(?P<feedback_id>[0-9A-Fa-f-]{32,36})$', feedback.views.single_feedback, name='single_feedback'),
     url(r'^new_feedback$', feedback.views.leave_new_feedback_page, name='new_feedback'),
     url(r'^new_feedback/random$', feedback.views.leave_new_feedback_page, name='new_feedback_random', kwargs={"random": True}),
     url(r'^feedback_received$', feedback.views.feedback_received, name='feedback_received'),
