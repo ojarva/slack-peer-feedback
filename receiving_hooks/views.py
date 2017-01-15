@@ -55,6 +55,9 @@ def peer_feedback_handler(request):
         raise PermissionDenied
 
     feedback_sender = SlackUser.objects.get(user_id=request.POST.get("user_id"))
+    if feedback_sender.show_slash_prompt_hint:
+        feedback_sender.show_slash_prompt_hint = False
+        feedback_sender.save()
 
     text = request.POST.get("text")
     if text == "list":
