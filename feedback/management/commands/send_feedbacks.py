@@ -18,6 +18,7 @@ class Command(BaseCommand):
                 authorization_data = AuthorizationData.objects.get(team_id=feedback.recipient.slack_team.team_id)
                 slack = slacker.Slacker(authorization_data.bot_access_token)
                 author_name = "Anonymous colleague"
+                author_icon = None
                 if not feedback.anonymous:
                     author_name = "%s (@%s)" % (feedback.sender.real_name, feedback.sender.name)
                     if feedback.sender.image_24:
@@ -47,7 +48,7 @@ class Command(BaseCommand):
                             },
                             {
                                 "name": "feedback_received",
-                                "text": "Ok, thanks.",
+                                "text": "Ok, dismiss.",
                                 "type": "button",
                                 "value": "feedback_received"
                             }
