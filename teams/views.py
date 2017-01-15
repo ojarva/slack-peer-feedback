@@ -23,9 +23,11 @@ def create_new_team(request):
     return render(request, "create_new_team.html", context={"form": form})
 
 
-def get_team_members(request):
+def get_team_members(request, **kwargs):
     team_id = request.session.get("team_id")
     if not team_id:
         raise PermissionDenied
     team_members = map(lambda k: k.to_public_json(), models.SlackUser.objects.filter(slack_team__team_id=team_id).filter(deleted=False).filter(is_bot=False))
+    if kwargs.get("list"):
+        team_members = map(lambda k: "%s (@%s)" % (k["real_name"], k["name"]), team_members)
     return HttpResponse(json.dumps(team_members), content_type="application/json")

@@ -45,6 +45,9 @@ class SlackUser(models.Model):
             data[attr] = getattr(self, attr)
         return data
 
+    def get_full_name(self):
+        return u"%s (@%s)" % (self.real_name, self.name)
+
     class Meta:
         ordering = (("real_name", "name"))
 
@@ -82,6 +85,9 @@ class Feedback(models.Model):
 
     response_url = models.CharField(max_length=1024, null=True, blank=True)
     response_url_valid_until = models.DateTimeField(null=True, blank=True)
+
+    def __unicode__(self):
+        return u"Feedback for %s by %s" % (self.recipient, self.get_author_name())
 
     def get_author_name(self):
         if self.anonymous:

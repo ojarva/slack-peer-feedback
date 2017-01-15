@@ -38,6 +38,7 @@ INSTALLED_APPS = (
     'oauth_handlers',
     'teams',
     'feedback',
+    'django_extensions',
 )
 
 SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"

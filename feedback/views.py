@@ -1,15 +1,18 @@
 from django.shortcuts import render
 import pprint
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseBadRequest
+from django.core.urlresolvers import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from teams.models import SlackUser, Feedback
 import json
-from teams.models import SlackUser
+from teams.models import SlackUser, Feedback
 from utils import verify_arguments
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
+import re
+import uuid
 
 def leave_new_feedback_page(request):
     token = request.GET.get("token")
@@ -20,11 +23,44 @@ def leave_new_feedback_page(request):
         expires_at = parse_datetime(request.GET.get("expires_at"))
         if expires_at < timezone.now():
             raise PermissionDenied
+        request.session["user_id"] = request.GET.get("sender_id")
         context["expires_at"] = expires_at
-        recipient_ids = request.GET.get("recipients", "").split(",")
-        context["recipients"] = SlackUser.objects.filter(user_id__in=recipient_ids)
+        recipient_ids = request.GET.get("recipients", "")
+        context["recipients"] = SlackUser.objects.filter(user_id__in=recipient_ids.split(","))
+        context["recipient_ids"] = recipient_ids
 
+    if not request.session.get("user_id"):
+        return HttpResponseRedirect(reverse("login"))
+
+    sender = SlackUser.objects.get(user_id=request.session.get("user_id"))
+    context["sender"] = sender
+
+    if request.method == "POST":
+        recipient_ids = request.POST.get("recipient_ids")
+        if recipient_ids:
+            recipients = recipient_ids.split(",")
+            recipients = SlackUser.objects.filter(user_id__in=recipient_ids)
+        else:
+            recipients = request.POST.get("recipient")
+            print recipients
+            components = re.match(r"^(?P<real_name>(.*)) \(@(?P<name>([A-Za-z0-9-_]+))\)$", recipients)
+            if not components:
+                return HttpResponseBadRequest("Invalid recipient data")
+            recipients = SlackUser.objects.filter(name=components.group("name")).filter(real_name=components.group("real_name"))
+            if len(recipients) == 0:
+                return HttpResponseBadRequest("No recipients found")
+
+        feedback_group_id = uuid.uuid4()
+        for recipient in recipients:
+            feedback = Feedback(feedback_group_id=feedback_group_id, recipient=recipient, sender=sender, feedback=request.POST.get("feedback_text"))
+            feedback.save()
+        return HttpResponseRedirect(reverse("feedback_received"))
     return render(request, "new_feedback.html", context)
+
+
+def feedback_received(request):
+    context = {}
+    return render(request, "feedback_received.html", context)
 
 
 @csrf_exempt

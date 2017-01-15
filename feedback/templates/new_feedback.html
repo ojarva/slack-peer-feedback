@@ -1,63 +1,37 @@
-
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="">
-    <meta name="author" content="">
-
-    <title>Narrow Jumbotron Template for Bootstrap</title>
-
-    <!-- Bootstrap core CSS -->
-    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap core CSS -->
-     <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet">
-     <!-- jQuery UI CSS -->
-     <link href="//code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" type="text/css" rel="stylesheet">
-    <!-- Custom styles for this template -->
-    <link href="/static/css/jumbotron-narrow.css" rel="stylesheet">
-    <link href="/static/css/tokenfield-typeahead.css" rel="stylesheet">
-    <link href="/static/css/bootstrap-tokenfield.css" type="text/css" rel="stylesheet">
-
-
-    <script type="text/javascript" src="//code.jquery.com/jquery-1.9.1.js"></script>
-    <script type="text/javascript" src="//code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
-    <script type="text/javascript" src="/static/bootstrap-tokenfield.js" charset="UTF-8"></script>
-
-    <script type="text/javascript">
-    $(document).ready(function () {
-      $('#tokenfield').tokenfield({
-        autocomplete: {
-          source: ['red','blue','green','yellow','violet','brown','purple','black','white'],
-          delay: 100
-        },
-        showAutocompleteOnFocus: false
+{% extends "base.html" %}
+{% block head %}
+  <script type="text/javascript">
+    $(document).ready(function() {
+      var users = new Bloodhound({
+        datumTokenizer: Bloodhound.tokenizers.whitespace,
+        queryTokenizer: Bloodhound.tokenizers.whitespace,
+        prefetch: '/api/slack/members/simple'
+      });
+      $('#recipient').typeahead(null, {
+        name: 'users',
+        source: users
       });
     });
     </script>
-  </head>
-
-  <body>
-
-    <div class="container">
+{% endblock %}
+{% block content %}
       <div class="jumbotron">
-        <h2>Feedback</h2>
-        <form method="post">
+        <form method="post" action="{{ actions_url }}">
           {% csrf_token %}
           <div class="form-group">
-            <input type="text" class="form-control" id="tokenfield" value="red,green,blue" />
+            {% if recipients %}
+              Feedback for <b>{% for recipient in recipients %}{{ recipient.get_full_name }} {% endfor %}</b> <small><a href="{% url 'new_feedback' %}">Someone else on your mind?</a></small>
+              <input type="hidden" name="recipient_ids" value="{{ recipient_ids }}">
+            {% else %}
+            <input type="text" class="form-control typeahead" id="recipient" name="recipient" value="" />
+            {% endif %}
           </div>
           <div class="form-group">
-            <textarea class="form-control input-lg" rows="5"></textarea>
+            <textarea class="form-control input-lg" rows="5" name="feedback_text"></textarea>
           </div>
           <div class="form-group">
             <button class="btn btn-lg btn-success" href="#" role="button">Send your feedback</button>
           </div>
         </form>
       </div>
-    </div> <!-- /container -->
-
-  </body>
-</html>
+{% endblock %}
