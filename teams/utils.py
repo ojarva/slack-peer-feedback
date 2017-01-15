@@ -15,7 +15,7 @@ def update_user(user_data):
         "tz": user_data.get("tz"),
         "email": profile.get("email"),
         "image_192": profile.get("image_192"),
-        "image_192": profile.get("image_24"),
+        "image_24": profile.get("image_24"),
         "tz_offset": user_data.get("tz_offset"),
     }
     SlackUser.objects.update_or_create(user_id=user_data["id"], defaults=data)
