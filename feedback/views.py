@@ -85,6 +85,19 @@ def feedback_received(request):
     return render(request, "feedback_received.html", context)
 
 
+def replace_attachment(attachments, callback_id, replacement):
+    for i, item in enumerate(attachments):
+        if item.get("callback_id") == callback_id:
+            break
+    else:
+        attachments.append(replacement)
+        return attachments
+    if replacement:
+        attachments[i] = replacement
+    else:
+        del attachments[i]
+    return attachments
+
 @csrf_exempt
 def receive_interactive_command(request):
     pprint.pprint(request.POST)
@@ -107,20 +120,25 @@ def receive_interactive_command(request):
 
     requested_action = action["actions"][0]["name"]
     response = {"replace_original": True, "response_type": "ephemeral"}
+    if "original_message" in action:
+        response.update(action["original_message"])
+    if "attachments" not in response:
+        response["attachments"] = []
+
     if requested_action == "do_not_show_slash_hint":
-        SlackUser.objects.filter(user_id=payload_data["user"]["id"]).update(show_slash_prompt_hint=False)
-        response["text"] = "You won't see this hint again."
+        SlackUser.objects.filter(user_id=action["user"]["id"]).update(show_slash_prompt_hint=False)
+        response["attachments"] = replace_attachment(response["attachments"], callback_id, {"text": "You won't see this hint again."})
     elif requested_action == "flag_helpful":
         feedback.update(flagged_helpful=True)
-        response["text"] = "Ok, thanks! This information will be available for the person who gave the feedback to you."
+        response["attachments"] = replace_attachment(response["attachments"], callback_id, {"text": "Ok, great! This information will be available for the person who gave the feedback to you."})
     elif requested_action == "didnt_understand":
         feedback.update(flagged_difficult_to_understand=True)
-        response["text"] = "Ok, thanks for the information! This will be available for the person who gave the feedback for you - hopefully they will clarify what they meant."
+        response["attachments"] = replace_attachment(response["attachments"], callback_id, {"text": "Ok, thanks for the information! This will be available for the person who gave the feedback for you - hopefully they will clarify what they meant."})
     elif requested_action == "feedback_received":
-        response["text"] = "You can view feedbacks you have received with /peer_feedback list"
+        response["attachments"] = replace_attachment(response["attachments"], callback_id, {"text": "You can view feedback you have received with `/peer_feedback list`"})
     elif requested_action == "add_name":
         feedback.update(anonymous=False)
-        response["attachments"] = [{
+        response["attachments"] = replace_attachment(response["attachments"], callback_id, {
             "fallback": "Edit your feedback.",
             "callback_id": callback_id,
             "color": "#3AA3E3",
@@ -141,11 +159,11 @@ def receive_interactive_command(request):
                     "value": "done"
                 }
             ]
-        }]
+        })
+
     elif requested_action == "cancel":
         feedback.update(cancelled=True)
-        response["text"] = "Ok, your feedback has been cancelled."
-        response["attachments"] = [{
+        response["attachments"] = replace_attachment(response["attachments"], callback_id, {
             "fallback": "Edit your feedback.",
             "callback_id": callback_id,
             "color": "#3AA3E3",
@@ -155,8 +173,10 @@ def receive_interactive_command(request):
                 "text": "Undo - show this feedback",
                 "type": "button",
                 "value": "undo_cancel",
-            }],
-        }]
+            }]
+        })
+
+        response["text"] = "Ok, your feedback has been cancelled."
 
     elif requested_action == "undo_cancel":
         feedback.update(cancelled=False)
@@ -190,13 +210,13 @@ def receive_interactive_command(request):
                     "dismiss_text": "No"
                 }
             })
-        response["attachments"] = [{
+        response["attachments"] = replace_attachment(response["attachments"], callback_id, {
             "fallback": "Edit your feedback.",
             "callback_id": callback_id,
             "color": "#3AA3E3",
             "attachment_type": "default",
             "actions": actions,
-        }]
+        })
     elif requested_action == "done":
         response["text"] = "Ok, thanks!"
     return HttpResponse(json.dumps(response), content_type="application/json")

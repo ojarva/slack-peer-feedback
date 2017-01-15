@@ -128,7 +128,7 @@ def peer_feedback_handler(request):
                     "text": "Cancel this feedback",
 					"style": "danger",
                     "type": "button",
-                    "value": "maze"
+                    "value": "cancel"
                 },
                 {
                     "name": "done",
