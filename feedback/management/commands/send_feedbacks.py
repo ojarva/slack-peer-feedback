@@ -17,17 +17,11 @@ class Command(BaseCommand):
             if now - feedback.given > datetime.timedelta(minutes=8):
                 authorization_data = AuthorizationData.objects.get(team_id=feedback.recipient.slack_team.team_id)
                 slack = slacker.Slacker(authorization_data.bot_access_token)
-                author_name = "Anonymous colleague"
-                author_icon = None
-                if not feedback.anonymous:
-                    author_name = "%s (@%s)" % (feedback.sender.real_name, feedback.sender.name)
-                    if feedback.sender.image_24:
-                        author_icon = feedback.sender.image_24
 
                 slack.chat.post_message(feedback.recipient.user_id, "You have new feedback", attachments=[
                     {
-                        "author_name": author_name,
-                        "author_icon": author_icon,
+                        "author_name": feedback.get_author_name(),
+                        "author_icon": feedback.get_author_icon(),
                         "text": feedback.feedback,
                         "fallback": "Respond to your feedback.",
                         "callback_id": "reply-%s" % feedback.feedback_id,

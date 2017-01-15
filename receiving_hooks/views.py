@@ -48,7 +48,7 @@ def incoming_slack_event(request):
 
 
 @csrf_exempt
-def new_feedback(request):
+def peer_feedback_handler(request):
     pprint.pprint(request.POST)
     if request.POST.get("token") != settings.VERIFICATION_TOKEN:
         raise PermissionDenied
@@ -57,15 +57,23 @@ def new_feedback(request):
 
     text = request.POST.get("text")
     if text == "list":
-        feedbacks = Feedback.objects.filter(recipient=feedback_sender).filter(cancelled=False).exclude(delivered=None)
-        feedback_text = render_to_string("feedback_list.txt", {"feedbacks": feedbacks})
-        return HttpResponse(json.dumps({"text": feedback_text, "response_type": "ephemeral"}), content_type="application/json")
+        feedbacks = Feedback.objects.filter(recipient=feedback_sender).filter(cancelled=False).exclude(delivered=None).order_by("delivered")[:20]
+        attachments = []
+        for feedback in feedbacks:
+            attachments.append({
+                "text": feedback.feedback,
+                "author_name": feedback.get_author_name(),
+                "author_icon": feedback.get_author_icon(),
+            })
+        return HttpResponse(json.dumps({"attachments": attachments, "response_type": "ephemeral"}), content_type="application/json")
+
     recipients, feedback = parse_new_feedback_input(text)
     if len(text) > 0 and len(recipients) == 0:
         return HttpResponse(json.dumps({"text": """Hmm, I couldn't parse the feedback. Use any of these:
-/peer_feedback @username Your feedback - directly sends anonymous feedback
-/peer_feedback @username - gives a link for more complex feedback
-/peer_feedback - gives options for giving more complex feedback for anyone""", "response_type": "ephemeral"}), content_type="application/json")
+`/peer_feedback @username Your feedback` - directly sends anonymous feedback
+`/peer_feedback @username` - gives a link for more complex feedback
+`/peer_feedback` - gives options for giving more complex feedback for anyone
+`/peer_feedback list` - shows recent feedback you have received.""", "response_type": "ephemeral"}), content_type="application/json")
 
     callback_id = None
     feedback_group_id = uuid.uuid4()

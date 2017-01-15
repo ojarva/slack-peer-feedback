@@ -72,3 +72,13 @@ class Feedback(models.Model):
 
     response_url = models.CharField(max_length=1024, null=True, blank=True)
     response_url_valid_until = models.DateTimeField(null=True, blank=True)
+
+    def get_author_name(self):
+        if self.anonymous:
+            return u"Anonymous colleague"
+        return u"%s (@%s)" % (self.sender.real_name, self.sender.name)
+
+    def get_author_icon(self):
+        if self.anonymous:
+            return None
+        return self.sender.image_24
