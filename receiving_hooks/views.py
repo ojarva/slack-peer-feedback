@@ -27,6 +27,15 @@ def parse_new_feedback_input(text):
 
 
 @csrf_exempt
+def incoming_event(request):
+    pprint.pprint(request.POST)
+    if request.POST.get("token") != settings.VERIFICATION_TOKEN:
+        raise PermissionDenied
+    if request.POST.get("type") == "url_verification":
+        return HttpResponse(json.dumps({"challenge": request.POST.get("challenge")}), content_type="application/json")
+
+
+@csrf_exempt
 def new_feedback(request):
     pprint.pprint(request.POST)
     if request.POST.get("token") != settings.VERIFICATION_TOKEN:

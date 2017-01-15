@@ -19,4 +19,5 @@ urlpatterns = [
     url(r'^team/(?P<team_id>[0-9+])$', teams.views.team_edit),
     url(r'^teams/create', teams.views.create_new_team, name='create_new_team'),
     url(r'^interactive_message/', feedback.views.receive_interactive_command),
+    url(r'^hooks/incoming_event', receiving_hooks.views.incoming_event),
 ]
