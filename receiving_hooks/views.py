@@ -9,6 +9,7 @@ import re
 from teams.models import Feedback, SlackUser
 from django.views.decorators.csrf import csrf_exempt
 from django.template.loader import render_to_string
+from teams.utils import update_user
 
 
 def parse_new_feedback_input(text):
@@ -39,7 +40,11 @@ def incoming_event(request):
     event_type = data.get("type")
     if event_type == "url_verification":
         return HttpResponse(json.dumps({"challenge": data.get("challenge")}), content_type="application/json")
-    if event_type == "user_change":
+    if event_type == "event_callback":
+        event = data.get("event")
+        if event["type"] == "user_change":
+            user = event["user"]
+            update_user(user)
         return HttpResponse()
 
 
