@@ -22,9 +22,10 @@ class SlackTeam(models.Model):
         return self.team_name
 
 class SlackUser(models.Model):
+    PUBLIC_ATTRIBUTES = ("name", "real_name", "tz", "user_id", "image_192", "image_24")
     is_admin = models.BooleanField(blank=True)
-    is_bot = models.BooleanField(blank=True)
-    deleted = models.BooleanField(blank=True)
+    is_bot = models.BooleanField(blank=True, default=False)
+    deleted = models.BooleanField(blank=True, default=False)
     name = models.CharField(max_length=50)
     real_name = models.CharField(max_length=50, null=True, blank=True)
     slack_team = models.ForeignKey("SlackTeam")
@@ -37,6 +38,15 @@ class SlackUser(models.Model):
 
     def __unicode__(self):
         return u"%s (@%s)" % (self.real_name, self.name)
+
+    def to_public_json(self):
+        data = {}
+        for attr in self.PUBLIC_ATTRIBUTES:
+            data[attr] = getattr(self, attr)
+        return data
+
+    class Meta:
+        ordering = (("real_name", "name"))
 
 class TeamMember(models.Model):
     team = models.ForeignKey("Team")

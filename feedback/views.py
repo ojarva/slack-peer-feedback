@@ -6,9 +6,25 @@ from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from teams.models import SlackUser, Feedback
 import json
+from teams.models import SlackUser
+from utils import verify_arguments
+from django.utils import timezone
+from django.utils.dateparse import parse_datetime
 
 def leave_new_feedback_page(request):
-    return render(request, "new_feedback.html")
+    token = request.GET.get("token")
+    context = {}
+    if token:
+        if not verify_arguments(dict(request.GET.iteritems()), token):
+            raise PermissionDenied
+        expires_at = parse_datetime(request.GET.get("expires_at"))
+        if expires_at < timezone.now():
+            raise PermissionDenied
+        context["expires_at"] = expires_at
+        recipient_ids = request.GET.get("recipients", "").split(",")
+        context["recipients"] = SlackUser.objects.filter(user_id__in=recipient_ids)
+
+    return render(request, "new_feedback.html", context)
 
 
 @csrf_exempt

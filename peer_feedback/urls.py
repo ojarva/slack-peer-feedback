@@ -22,6 +22,8 @@ urlpatterns = [
     url(r'^team/(?P<team_id>[0-9+])$', teams.views.team_edit),
     url(r'^teams/create', teams.views.create_new_team, name='create_new_team'),
 
+    url(r'^api/slack/members', teams.views.get_team_members),
+
     url(r'^new_feedback/$', feedback.views.leave_new_feedback_page),
 
     url(r'^admin/', include(admin.site.urls)),

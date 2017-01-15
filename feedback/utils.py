@@ -9,16 +9,19 @@ import urllib
 
 
 def hash_arguments(args):
-    return hashlib.sha256(str(sorted(args.items())) + settings.USER_LINK_SECRET).hexdigest()
+    hash_string = str(sorted(args.items()))
+    return hashlib.sha256(hash_string + settings.USER_LINK_SECRET).hexdigest()
 
-def verify_arguments(args, secret):
-    return hash_arguments(args) == secret
+def verify_arguments(args, token):
+    if "token" in args:
+        del args["token"]
+    return hash_arguments(args) == token
 
 def get_new_feedback_url(sender, recipients):
     args = {
-        "sender_id": sender.user_id,
-        "recipients": ",".join(map(lambda k: k[0], recipients)),
-        "expires_at": timezone.now() + datetime.timedelta(hours=2),
+        u"sender_id": sender.user_id,
+        u"recipients": u",".join(map(lambda k: k[0], recipients)),
+        u"expires_at": unicode(timezone.now() + datetime.timedelta(hours=2)),
     }
     args["token"] = hash_arguments(args)
 

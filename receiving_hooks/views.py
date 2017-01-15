@@ -87,7 +87,7 @@ def peer_feedback_handler(request):
         recipients_text = "%s recipients"
 
     if len(feedback) == 0 and len(recipients) > 0:
-        return HttpResponse(json.dumps({"text": "Got it. <%s|Send feedback to %s>. This link is valid for 2 hours." % (get_new_feedback_url(feedback_sender, recipients), ", ".join(recipients))}), content_type="application/json")
+        return HttpResponse(json.dumps({"text": "Got it. <%s|Send feedback to %s>. This link is valid for 2 hours." % (get_new_feedback_url(feedback_sender, recipients), ", ".join(map(lambda k: "@" + k[1], recipients)))}), content_type="application/json")
     if len(text) == 0:
         return HttpResponse(json.dumps({"text": "<%s|Send feedback>. This link is valid for 2 hours." % (get_new_feedback_url(feedback_sender, []))}), content_type="application/json")
 
