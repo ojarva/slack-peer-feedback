@@ -22,6 +22,8 @@ OAUTH_CALLBACK = os.environ["OAUTH_CALLBACK"]
 USER_LOGIN_CALLBACK = os.environ["USER_LOGIN_CALLBACK"]
 VERIFICATION_TOKEN = os.environ["VERIFICATION_TOKEN"]
 
+WEB_ROOT = os.environ["WEB_ROOT"]
+
 # Application definition
 
 INSTALLED_APPS = (

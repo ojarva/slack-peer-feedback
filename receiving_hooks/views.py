@@ -10,6 +10,7 @@ from teams.models import Feedback, SlackUser
 from django.views.decorators.csrf import csrf_exempt
 from django.template.loader import render_to_string
 from teams.utils import update_user
+from feedback.utils import get_new_feedback_url
 
 
 def parse_new_feedback_input(text):
@@ -80,6 +81,17 @@ def peer_feedback_handler(request):
     if len(recipients) > 1:
         callback_id = "group-" + str(feedback_group_id)
 
+    if len(recipients) == 1:
+        recipients_text = "one recipient"
+    else:
+        recipients_text = "%s recipients"
+
+    if len(feedback) == 0 and len(recipients) > 0:
+        return HttpResponse(json.dumps({"text": "Got it. <%s|Send feedback to %s>. This link is valid for 2 hours." % (get_new_feedback_url(feedback_sender, recipients), ", ".join(recipients))}), content_type="application/json")
+    if len(text) == 0:
+        return HttpResponse(json.dumps({"text": "<%s|Send feedback>. This link is valid for 2 hours." % (get_new_feedback_url(feedback_sender, []))}), content_type="application/json")
+
+
     for recipient in recipients:
         slack_user = SlackUser.objects.get(user_id=recipient[0])
         user_feedback = Feedback(recipient=slack_user, sender=feedback_sender, feedback=feedback, feedback_group_id=feedback_group_id, response_url=request.POST.get("response_url"))
@@ -87,10 +99,6 @@ def peer_feedback_handler(request):
         if not callback_id:
             callback_id = "item-" + str(user_feedback.feedback_id)
 
-    if len(recipients) == 1:
-        recipients_text = "one recipient"
-    else:
-        recipients_text = "%s recipients"
     if len(feedback) > 0 and len(recipients) > 0:
         return HttpResponse(json.dumps({"text": "Got it. Your feedback will be delivered anonymously to %s" % recipients_text, "attachments": [{
             "text": "%s\n\nThis feedback will be delivered anonymously to %s. Do you want to take any other actions?" % (feedback, recipients_text),
