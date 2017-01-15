@@ -6,6 +6,7 @@ from django.utils import timezone
 import datetime
 import requests
 import slacker
+import uuid
 
 
 class Command(BaseCommand):
@@ -17,8 +18,7 @@ class Command(BaseCommand):
             if now - feedback.given > datetime.timedelta(minutes=8):
                 authorization_data = AuthorizationData.objects.get(team_id=feedback.recipient.slack_team.team_id)
                 slack = slacker.Slacker(authorization_data.bot_access_token)
-
-                slack.chat.post_message(feedback.recipient.user_id, "You have new feedback", attachments=[
+                attachments = [
                     {
                         "author_name": feedback.get_author_name(),
                         "author_icon": feedback.get_author_icon(),
@@ -48,7 +48,24 @@ class Command(BaseCommand):
                             }
                         ]
                     }
-                ])
+                ]
+                if feedback.recipient.show_slash_prompt_hint:
+                    attachments.append(object={
+                        "text": "You can use `/peer_feedback @username Your feedback message` to send anonymous feedback to your colleagues.",
+                        "attachment_type": "default",
+                        "color": "#D5D5D5",
+                        "fallback": "Try /peer_feedback command",
+                        "callback_id": "feedback-hint-%s" % uuid.uuid4(),
+                        "actions": [
+                            {
+                                "name": "do_not_show_slash_hint",
+                                "text": "Got it",
+                                "type": "button",
+                                "value": "do_not_show_slash_hint"
+                            }
+                        ],
+                    })
+                slack.chat.post_message(feedback.recipient.user_id, "You have new feedback", attachments=attachments)
                 feedback.delivered = now
                 feedback.save()
 

@@ -36,6 +36,8 @@ class SlackUser(models.Model):
     image_192 = models.CharField(max_length=1024, null=True, blank=True)
     image_24 = models.CharField(max_length=1024, null=True, blank=True)
 
+    show_slash_prompt_hint = models.BooleanField(blank=True, default=False)
+
     def __unicode__(self):
         return u"%s (@%s)" % (self.real_name, self.name)
 

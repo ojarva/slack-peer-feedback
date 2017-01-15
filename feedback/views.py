@@ -88,7 +88,7 @@ def feedback_received(request):
 @csrf_exempt
 def receive_interactive_command(request):
     pprint.pprint(request.POST)
-    payload_data = request.POST.get("payload", [])
+    payload_data = request.POST.get("payload", {})
     action = json.loads(payload_data)
     if action["token"] != settings.VERIFICATION_TOKEN:
         raise PermissionDenied
@@ -96,6 +96,8 @@ def receive_interactive_command(request):
 
     if callback_id.startswith("reply-"):
         feedback = Feedback.objects.filter(feedback_id=callback_id.replace("reply-", ""))
+    elif callback_id.startswith("feedback-hint"):
+        pass
     else:
         if callback_id.startswith("group-"):
             feedback = Feedback.objects.filter(feedback_group_id=callback_id.replace("group-", ""))
@@ -105,7 +107,10 @@ def receive_interactive_command(request):
 
     requested_action = action["actions"][0]["name"]
     response = {"replace_original": True, "response_type": "ephemeral"}
-    if requested_action == "flag_helpful":
+    if requested_action == "do_not_show_slash_hint":
+        SlackUser.objects.filter(user_id=payload_data["user"]["id"]).update(show_slash_prompt_hint=False)
+        response["text"] = "You won't see this hint again."
+    elif requested_action == "flag_helpful":
         feedback.update(flagged_helpful=True)
         response["text"] = "Ok, thanks! This information will be available for the person who gave the feedback to you."
     elif requested_action == "didnt_understand":
