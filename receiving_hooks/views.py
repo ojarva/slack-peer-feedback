@@ -28,9 +28,8 @@ def parse_new_feedback_input(text):
 
 
 @csrf_exempt
-def incoming_event(request):
+def incoming_slack_event(request):
     data = json.loads(request.body)
-    pprint.pprint(data)
 
     if not isinstance(data, dict):
         return HttpResponseBadRequest("Expected application/json body, got something else.")
