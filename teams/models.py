@@ -102,6 +102,9 @@ class Feedback(models.Model):
     def __unicode__(self):
         return u"Feedback for %s by %s" % (self.recipient, self.get_author_name())
 
+    def get_replies_count(self):
+        return Feedback.objects.filter(feedback_id=self.reply_to).count()
+
     def get_author_name(self):
         if self.anonymous:
             return u"Anonymous colleague"

@@ -15,6 +15,17 @@ import re
 import uuid
 
 
+def sent_feedback(request):
+    if not request.session.get("user_id") or request.session.get("authenticated_by") != "slack_login":
+        return HttpResponseRedirect(reverse("login"))
+    slack_user = SlackUser.objects.get(user_id=request.session.get("user_id"))
+    feedbacks = Feedback.objects.filter(sender=slack_user).filter(cancelled=False).filter(reply_to=None)
+    context = {
+        "slack_user": slack_user,
+        "feedbacks": feedbacks,
+    }
+    return render(request, "sent_feedback.html", context)
+
 
 def dashboard(request):
     if not request.session.get("user_id") or request.session.get("authenticated_by") != "slack_login":
@@ -90,7 +101,7 @@ def leave_new_feedback_page(request, **kwargs):
         return HttpResponseRedirect(reverse("login"))
 
     sender = SlackUser.objects.get(user_id=request.session.get("user_id"))
-    context["sender"] = sender
+    context["sender"] = context["slack_user"] = sender
 
     if request.method == "POST":
         recipient_ids = request.POST.get("recipient_ids")

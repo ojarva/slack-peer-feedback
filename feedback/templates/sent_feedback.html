@@ -8,10 +8,11 @@
     <h1>Sent feedback</h1>
     {% if feedbacks %}
     {% for feedback in feedbacks %}
-      <p class="text-info">To be delivered:</p>
+      <p class="text-right">You sent {% if feedback.anonymous %}anonymously to{% else %}with name to{% endif %} {% if feedback.image_24 %}<img src="{{ feedback.image_24 }}" /> {% endif %}{{ feedback.recipient.real_name }} (<a href="https://{{ slack_user.slack_team.team_name }}.slack.com/messages/@{{ feedback.recipient.name }}/">@{{ feedback.recipient.name }}</a>). <a href="{% url 'single_feedback' feedback.feedback_id %}">View and reply.</a> {% if not feedback.delivered %}Not yet delivered.{% endif %} They see this:</p>
+
       <blockquote class="blockquote-reverse">
         <p>{{ feedback.feedback }}</p>
-        <footer><b>You</b> sent {% if feedback.anonymous %}anonymously to{% else %}with name to{% endif %} <a href="https://{{ slack_user.slack_team.team_name }}.slack.com/messages/@{{ feedback.recipient.name }}/">{% if feedback.image_24 %}<img src="{{ feedback.image_24 }}" /> {% endif %}{{ feedback.recipient.real_name }} (@{{ feedback.recipient.name }})</a> {{ feedback.given | naturaltime }} - <a href="{% url 'single_feedback' feedback.feedback_id %}">View</a></footer>
+        <footer>{% if not feedback.anonymous %}<a href="https://{{ slack_user.slack_team.team_name }}.slack.com/messages/@{{ feedback.sender.name }}/">{% if feedback.get_author_icon %}<img src="{{ feedback.get_author_icon}}" />{% endif %}{{ feedback.get_author_name }}</a>{% else %}{{ feedback.get_author_name}}{% endif %} {{ feedback.given | naturaltime }}</footer>
       </blockquote>
     {% endfor %}
     {% else %}
