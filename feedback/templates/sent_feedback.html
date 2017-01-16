@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% block title %}Sent feedback{% endblock %}
+{% block content %}
+
+<div class="row">
+  <div class="col-md-12">
+    <h1>Sent feedback</h1>
+    {% if feedbacks %}
+    {% for feedback in feedbacks %}
+      <p class="text-info">To be delivered:</p>
+      <blockquote class="blockquote-reverse">
+        <p>{{ feedback.feedback }}</p>
+        <footer><b>You</b> sent {% if feedback.anonymous %}anonymously to{% else %}with name to{% endif %} <a href="https://{{ slack_user.slack_team.team_name }}.slack.com/messages/@{{ feedback.recipient.name }}/">{% if feedback.image_24 %}<img src="{{ feedback.image_24 }}" /> {% endif %}{{ feedback.recipient.real_name }} (@{{ feedback.recipient.name }})</a> {{ feedback.given | naturaltime }} - <a href="{% url 'single_feedback' feedback.feedback_id %}">View</a></footer>
+      </blockquote>
+    {% endfor %}
+    {% else %}
+    <p>You haven't sent any feedback - yet.</p>
+
+    <ul>
+      <li>Make someone else happy by <a href="{% url "new_feedback" %}">giving them feedback</a>.</li>
+      <li>Can't decide what and who? <a href="{% url "new_feedback_random" %}">Random recipient and random question</a></li>
+    </ul>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
