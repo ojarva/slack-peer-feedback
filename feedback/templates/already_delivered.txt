@@ -1,0 +1,1 @@
+You can't cancel this anymore, as it has been delivered. If you want to, {% if single_feedback %}<{{ single_feedback.get_feedback_url }}|you can continue discussion>.{% else %}you can continue discussion separately: {% for feedback in feedbacks %}}<{{ feedback.get_feedback_url }}|{{ feedback.recipient.get_full_name }}>{% if not forloop.last %}, {% endif %}{% endfor %}.{% endif %}

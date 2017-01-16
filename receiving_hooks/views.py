@@ -63,9 +63,10 @@ def peer_feedback_handler(request):
         attachments = []
         for feedback in feedbacks:
             attachments.append({
-                "text": feedback.feedback,
+                "text": """%s\n\n<%s|View or reply>""" % (feedback.feedback, feedback.get_feedback_url()),
                 "author_name": feedback.get_author_name(),
                 "author_icon": feedback.get_author_icon(),
+                "mrkdwn_in": ["text"],
             })
         return HttpResponse(json.dumps({"attachments": attachments, "response_type": "ephemeral"}), content_type="application/json")
 
@@ -97,16 +98,17 @@ def peer_feedback_handler(request):
         slack_user = SlackUser.objects.get(user_id=recipient[0])
         user_feedback = Feedback(recipient=slack_user, sender=feedback_sender, feedback=feedback, feedback_group_id=feedback_group_id, response_url=request.POST.get("response_url"))
         user_feedback.save()
-        if not callback_id:
+        if not callback_id:  # TODO: this is not compatible with giving feedback to multiple users at once.
             callback_id = "item-" + str(user_feedback.feedback_id)
 
     if len(feedback) > 0 and len(recipients) > 0:
         return HttpResponse(json.dumps({"text": "Got it. Your feedback will be delivered anonymously to %s" % recipients_text, "attachments": [{
-            "text": "%s\n\nThis feedback will be delivered anonymously to %s. Do you want to take any other actions?" % (feedback, recipients_text),
+            "text": "%s\n\nThis feedback will be delivered anonymously to %s. Do you want to take any other actions? You can also <%s|view or reply to this feedback>" % (feedback, recipients_text, user_feedback.get_feedback_url()),  # TODO: this is not compatible with giving feedback to multiple users at once.
             "fallback": "Edit your feedback.",
             "callback_id": callback_id,
             "color": "#3AA3E3",
             "attachment_type": "default",
+            "mrkdwn_in": ["text"],
             "actions": [
                 {
                     "name": "add_name",

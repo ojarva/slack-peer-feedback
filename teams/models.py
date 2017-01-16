@@ -32,11 +32,13 @@ class SlackUser(models.Model):
     is_bot = models.BooleanField(blank=True, default=False)
     deleted = models.BooleanField(blank=True, default=False)
     name = models.CharField(max_length=50)
-    real_name = models.CharField(max_length=50, null=True, blank=True)
+    real_name = models.CharField(max_length=500, null=True, blank=True)
+    first_name = models.CharField(max_length=250, null=True, blank=True)
+    last_name = models.CharField(max_length=250, null=True, blank=True)
     slack_team = models.ForeignKey("SlackTeam")
     tz = models.CharField(max_length=50, null=True, blank=True)
     tz_offset = models.IntegerField(null=True)
-    user_id = models.CharField(primary_key=True, max_length=50)
+    user_id = models.CharField(primary_key=True, max_length=50, editable=False)
     email = models.CharField(max_length=255, null=True, blank=True)
     image_192 = models.CharField(max_length=1024, null=True, blank=True)
     image_24 = models.CharField(max_length=1024, null=True, blank=True)
@@ -80,6 +82,7 @@ class Feedback(models.Model):
     sender = models.ForeignKey("SlackUser", related_name="sender_user")
     anonymous = models.BooleanField(blank=True, default=True)
 
+    question = models.CharField(max_length=250, null=True, blank=True)
     feedback = models.TextField()
 
     reply_to = models.ForeignKey("Feedback", null=True, blank=True, related_name="feedback_response")
@@ -109,14 +112,20 @@ class Feedback(models.Model):
             return None
         return self.sender.image_24
 
+    def get_feedback_url(self):
+        if self.reply_to:
+            parent_feedback = self.reply_to
+        else:
+            parent_feedback = self
+        return "%s%s" % (settings.WEB_ROOT, reverse("single_feedback", args=(parent_feedback.feedback_id,)).strip("/"))
+
+
     def get_slack_notification(self):
         pre_text = ""
         if self.reply_to:
-            parent_feedback = self.reply_to
             pre_text = "%s replied to your feedback:\n" % self.get_author_name()
-        else:
-            parent_feedback = self
-        feedback_url = "%s%s" % (settings.WEB_ROOT, reverse("single_feedback", args=(parent_feedback.feedback_id,)).strip("/"))
+        feedback_url = self.get_feedback_url()
+
         return {
             "author_name": self.get_author_name(),
             "author_icon": self.get_author_icon(),
@@ -155,4 +164,18 @@ class Feedback(models.Model):
         self.save()
         authorization_data = AuthorizationData.objects.get(team_id=self.recipient.slack_team.team_id)
         slack = slacker.Slacker(authorization_data.bot_access_token)
-        slack.chat.post_message(self.recipient.user_id, "You have new feedback", attachments=[self.get_slack_notification()])
+        if len(settings.ONLY_MESSAGES_TO) == 0 or self.recipient.user_id in settings.ONLY_MESSAGES_TO:
+            slack.chat.post_message(self.recipient.user_id, "You have new feedback", attachments=[self.get_slack_notification()])
+
+
+class FeedbackQuestion(models.Model):
+    question_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    question_text = models.CharField(max_length=250)
+
+    generic_question = models.BooleanField(default=True)
+    team_question = models.BooleanField(default=False)
+
+    team = models.ForeignKey("Team", null=True, blank=True)
+
+    def __unicode__(self):
+        return self.question_text

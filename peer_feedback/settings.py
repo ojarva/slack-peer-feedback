@@ -24,6 +24,8 @@ VERIFICATION_TOKEN = os.environ["VERIFICATION_TOKEN"]
 
 WEB_ROOT = os.environ["WEB_ROOT"]
 
+ONLY_MESSAGES_TO = os.environ.get("ONLY_MESSAGES_TO", "").split(",")
+
 # Application definition
 
 INSTALLED_APPS = (

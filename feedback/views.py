@@ -6,6 +6,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from teams.models import SlackUser, Feedback
+from django.template.loader import render_to_string
 import json
 from utils import verify_arguments, get_random_question, get_random_recipient
 from django.utils import timezone
@@ -94,7 +95,7 @@ def leave_new_feedback_page(request, **kwargs):
     if request.method == "POST":
         recipient_ids = request.POST.get("recipient_ids")
         if recipient_ids:
-            recipients = recipient_ids.split(",")
+            recipient_ids = recipient_ids.split(",")
             recipients = SlackUser.objects.filter(user_id__in=recipient_ids)
         else:
             recipients = request.POST.get("recipient")
@@ -106,8 +107,10 @@ def leave_new_feedback_page(request, **kwargs):
                 return HttpResponseBadRequest("No recipients found")
 
         feedback_group_id = uuid.uuid4()
+        if len(recipients) == 0:
+            return HttpResponseBadRequest("No recipients found :(")
         for recipient in recipients:
-            feedback = Feedback(feedback_group_id=feedback_group_id, recipient=recipient, sender=sender, feedback=request.POST.get("feedback_text"))
+            feedback = Feedback(feedback_group_id=feedback_group_id, recipient=recipient, sender=sender, feedback=request.POST.get("feedback_text"), question=request.POST.get("question"))
             feedback.save()
         return HttpResponseRedirect(reverse("feedback_received"))
 
@@ -168,12 +171,12 @@ def receive_interactive_command(request):
         response["attachments"] = replace_attachment(response["attachments"], callback_id, {"text": "You won't see this hint again."})
     elif requested_action == "flag_helpful":
         feedback.update(flagged_helpful=True)
-        response["attachments"] = replace_attachment(response["attachments"], callback_id, {"text": "Ok, great! This information will be available for the person who gave the feedback to you."})
+        response["attachments"] = replace_attachment(response["attachments"], callback_id, {"text": "Ok, great! This information will be available for the person who gave the feedback to you. <%s|View or reply to this feedback>" % feedback[0].get_feedback_url(), "mrkdwn_in": ["text"]})
     elif requested_action == "didnt_understand":
         feedback.update(flagged_difficult_to_understand=True)
-        response["attachments"] = replace_attachment(response["attachments"], callback_id, {"text": "Ok, thanks for the information! This will be available for the person who gave the feedback for you - hopefully they will clarify what they meant."})
+        response["attachments"] = replace_attachment(response["attachments"], callback_id, {"text": "Ok, thanks for the information! This will be available for the person who gave the feedback for you - hopefully they will clarify what they meant. <%s|View or reply to this feedback>" % (feedback[0].get_feedback_url()), "mrkdwn_in": ["text"]})
     elif requested_action == "feedback_received":
-        response["attachments"] = replace_attachment(response["attachments"], callback_id, {"text": "You can view feedback you have received with `/peer_feedback list`"})
+        response["attachments"] = replace_attachment(response["attachments"], callback_id, {"text": "You can view feedback you have received with `/peer_feedback list`. You can <%s|view or reply to this feedback>" % feedback[0].get_feedback_url(), "mrkdwn_in": ["text"]})
     elif requested_action == "add_name":
         feedback.update(anonymous=False)
         response["attachments"] = replace_attachment(response["attachments"], callback_id, {
@@ -200,22 +203,43 @@ def receive_interactive_command(request):
         })
 
     elif requested_action == "cancel":
-        feedback.update(cancelled=True)
-        response["attachments"] = replace_attachment(response["attachments"], callback_id, {
-            "fallback": "Edit your feedback.",
-            "callback_id": callback_id,
-            "color": "#3AA3E3",
-            "attachment_type": "default",
-            "actions": [{
-                "name": "undo_cancel",
-                "text": "Undo - show this feedback",
-                "type": "button",
-                "value": "undo_cancel",
-            }]
-        })
-
-        response["text"] = "Ok, your feedback has been cancelled."
-
+        delivered = False
+        for single_feedback in feedback:
+            if single_feedback.delivered:
+                delivered = True
+                break
+        if not delivered:
+            feedback.update(cancelled=True)
+            response["attachments"] = replace_attachment(response["attachments"], callback_id, {
+                "fallback": "Edit your feedback.",
+                "callback_id": callback_id,
+                "color": "#3AA3E3",
+                "attachment_type": "default",
+                "actions": [{
+                    "name": "undo_cancel",
+                    "text": "Undo - show this feedback",
+                    "type": "button",
+                    "value": "undo_cancel",
+                }]
+            })
+            response["text"] = "Ok, your feedback has been cancelled."
+        else:
+            single_feedback = None
+            if len(feedback) == 1:
+                single_feedback = feedback[0]
+            text = render_to_string("already_delivered.txt", context={
+                "single_feedback": single_feedback,
+                "feedbacks": feedback,
+            })
+            response["attachments"] = replace_attachment(response["attachments"], callback_id, {
+                "fallback": "Feedback has been delivered.",
+                "text": text,
+                "mrkdwn_in": ["text"],
+                "callback_id": callback_id,
+                "color": "#3AA3E3",
+                "attachment_type": "default"
+            })
+            response["text"] = "Already delivered."
     elif requested_action == "undo_cancel":
         feedback.update(cancelled=False)
         response["text"] = "Ok, undo done - feedback will be delivered soon."

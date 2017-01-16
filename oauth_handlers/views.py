@@ -3,7 +3,6 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from django.core.exceptions import PermissionDenied
 
-import pprint
 from django.conf import settings
 import requests
 from .models import AuthorizationData
