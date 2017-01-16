@@ -1,0 +1,52 @@
+[
+  {
+    "model": "teams.feedbackquestion",
+    "pk": "2020ab7d-8f0e-4c43-8e87-53384bc069a3",
+    "fields": {
+      "question_text": "If you would be organizing a new project team, would you include {first_name}? In what kind of role?",
+      "generic_question": true,
+      "team_question": true,
+      "team": null
+    }
+  },
+  {
+    "model": "teams.feedbackquestion",
+    "pk": "3a07559e-dc8e-4799-89c5-ef94c266afc8",
+    "fields": {
+      "question_text": "How was last week with {first_name}?",
+      "generic_question": false,
+      "team_question": true,
+      "team": null
+    }
+  },
+  {
+    "model": "teams.feedbackquestion",
+    "pk": "9d39039a-c000-4537-b9a2-46cce4a07b7f",
+    "fields": {
+      "question_text": "In your opinion, what {first_name} could do better?",
+      "generic_question": true,
+      "team_question": true,
+      "team": null
+    }
+  },
+  {
+    "model": "teams.feedbackquestion",
+    "pk": "cb25e005-1d6a-4318-bcfa-8ea156f91f34",
+    "fields": {
+      "question_text": "What do you hope to see more from {first_name}?",
+      "generic_question": true,
+      "team_question": true,
+      "team": null
+    }
+  },
+  {
+    "model": "teams.feedbackquestion",
+    "pk": "f380cdb3-739a-4025-a7b5-15908715c8a8",
+    "fields": {
+      "question_text": "During past month, what have been the best things about {first_name}?",
+      "generic_question": true,
+      "team_question": true,
+      "team": null
+    }
+  }
+]
