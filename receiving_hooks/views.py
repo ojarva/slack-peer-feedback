@@ -57,7 +57,7 @@ def peer_feedback_handler(request):
         feedback_sender.show_slash_prompt_hint = False
         feedback_sender.save()
 
-    text = request.POST.get("text")
+    text = request.POST.get("text").strip()
     if text == "list":
         feedbacks = Feedback.objects.filter(recipient=feedback_sender).filter(cancelled=False).exclude(delivered_at=None).order_by("delivered_at")[:20]
         attachments = []
@@ -68,13 +68,17 @@ def peer_feedback_handler(request):
                 "author_icon": feedback.get_author_icon(),
                 "mrkdwn_in": ["text"],
             })
-        return HttpResponse(json.dumps({"attachments": attachments, "response_type": "ephemeral"}), content_type="application/json")
+        feedback_list_text = None
+        if len(attachments) == 0:
+            feedback_list_text = "You don't have any feedback - yet."
+        response = {"attachments": attachments, "text": feedback_list_text, "response_type": "ephemeral"}
+        return HttpResponse(json.dumps(response), content_type="application/json")
 
     recipients, feedback = parse_new_feedback_input(text)
     if len(text) > 0 and len(recipients) == 0:
         return HttpResponse(json.dumps({"text": """Hmm, I couldn't parse the feedback :tired_face:. Use any of these:
 `/peer_feedback @username Your feedback` - directly sends anonymous feedback :star:
-`/peer_feedback @username` - gives a link to feedback form :link:
+`/peer_feedback @username` - link to feedback form with specific user :link:
 `/peer_feedback` - link to feedback form :link:
 `/peer_feedback list` - shows recent feedback you have received :book:.""", "response_type": "ephemeral", "mrkdwn_in": ["text"]}), content_type="application/json")
 
