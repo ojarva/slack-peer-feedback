@@ -11,6 +11,8 @@ def update_user(user_data):
         "deleted": user_data.get("deleted", False),
         "name": user_data.get("name"),
         "real_name": profile.get("real_name"),
+        "first_name": profile.get("first_name"),
+        "last_name": profile.get("last_name"),
         "slack_team": slack_team,
         "tz": user_data.get("tz"),
         "email": profile.get("email"),
@@ -25,5 +27,8 @@ def refresh_slack_users(team_id):
     authorization_data = AuthorizationData.objects.get(team_id=team_id)
     slack = slacker.Slacker(authorization_data.access_token)
     users = slack.users.list().body["members"]
+    i = 0
     for user in users:
         update_user(user)
+        i += 1
+    return i

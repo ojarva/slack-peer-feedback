@@ -12,5 +12,9 @@ class Command(BaseCommand):
     help = "Refresh all members of all teams"
 
     def handle(self, *args, **kwargs):
+        updated_users = 0
+        team_count = 0
         for authorization_data in AuthorizationData.objects.all():
-            refresh_slack_users(authorization_data.team_id)
+            team_count += 1
+            updated_users += refresh_slack_users(authorization_data.team_id)
+        print "Updated %s users in %s teams" % (updated_users, team_count)
