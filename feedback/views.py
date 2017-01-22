@@ -45,7 +45,7 @@ def dashboard(request):
     if not request.session.get("user_id") or request.session.get("authenticated_by") != "slack_login":
         return HttpResponseRedirect(reverse("login"))
     slack_user = SlackUser.objects.get(user_id=request.session.get("user_id"))
-    feedbacks = Feedback.objects.filter(recipient=slack_user).filter(cancelled=False).exclude(delivered=None).filter(reply_to=None)
+    feedbacks = Feedback.objects.filter(recipient=slack_user).filter(cancelled=False).exclude(delivered_at=None).filter(reply_to=None)
     pending_questions = SentQuestion.objects.filter(feedback_sender=slack_user).filter(dismissed_at=None).filter(answered_at=None)
     context = {
         "slack_user": slack_user,
@@ -80,7 +80,7 @@ def single_feedback(request, feedback_id):
     if request.method == "POST":
         print request.POST
         if "feedback-action" in request.POST:
-            if not feedback.delivered:
+            if not feedback.delivered_at:
                 if "make_non_anonymous" in request.POST:
                     feedback.anonymous = False
                 elif "make_anonymous" in request.POST:
@@ -106,7 +106,7 @@ def single_feedback(request, feedback_id):
     feedbacks = []
     reply_exists = True
     feedbacks.append(feedback)
-    feedbacks.extend(Feedback.objects.filter(reply_to=feedback).filter(cancelled=False).exclude(delivered=None).order_by("given"))
+    feedbacks.extend(Feedback.objects.filter(reply_to=feedback).filter(cancelled=False).exclude(delivered_at=None).order_by("given_at"))
 
     context["feedbacks"] = feedbacks
     return render(request, "single_feedback.html", context)

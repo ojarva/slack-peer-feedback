@@ -91,8 +91,8 @@ class Feedback(models.Model):
 
     reply_to = models.ForeignKey("Feedback", null=True, blank=True, related_name="feedback_response")
 
-    given = models.DateTimeField(auto_now_add=True)
-    delivered = models.DateTimeField(null=True, blank=True)
+    given_at = models.DateTimeField(auto_now_add=True)
+    delivered_at = models.DateTimeField(null=True, blank=True)
 
     flagged_helpful = models.BooleanField(blank=True, default=False)
     flagged_difficult_to_understand = models.BooleanField(blank=True, default=False)
@@ -101,7 +101,7 @@ class Feedback(models.Model):
     response_url_valid_until = models.DateTimeField(null=True, blank=True)
 
     class Meta:
-        ordering = ("-given", )
+        ordering = ("-given_at", )
 
     def __unicode__(self):
         return u"Feedback for %s by %s" % (self.recipient, self.get_author_name())
@@ -165,9 +165,9 @@ class Feedback(models.Model):
         }
 
     def send_notification(self):
-        if self.delivered:
+        if self.delivered_at:
             return False
-        self.delivered = timezone.now()
+        self.delivered_at = timezone.now()
         self.save()
         authorization_data = AuthorizationData.objects.get(team_id=self.recipient.slack_team.team_id)
         slack = slacker.Slacker(authorization_data.bot_access_token)
