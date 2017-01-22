@@ -267,7 +267,7 @@ def receive_interactive_command(request):
     elif requested_action == "cancel":
         delivered = False
         for single_feedback in feedback:
-            if single_feedback.delivered:
+            if single_feedback.delivered_at:
                 delivered = True
                 break
         if not delivered:

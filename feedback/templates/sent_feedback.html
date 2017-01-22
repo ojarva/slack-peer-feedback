@@ -9,7 +9,7 @@
     {% if feedbacks %}
     {% for feedback in feedbacks %}
 
-      <p class="text-right">You sent {% if feedback.anonymous %}anonymously to{% else %}with name to{% endif %} {% if feedback.image_24 %}<img src="{{ feedback.image_24 }}" /> {% endif %}{{ feedback.recipient.real_name }} (<a href="https://{{ slack_user.slack_team.team_name }}.slack.com/messages/@{{ feedback.recipient.name }}/">@{{ feedback.recipient.name }}</a>). <a href="{% url 'single_feedback' feedback.feedback_id %}">View and reply.</a> {% if not feedback.delivered %}Not yet delivered. They will see this: {% else %}They see this:{% endif %}</p>
+      <p class="text-right">You sent {% if feedback.anonymous %}anonymously to{% else %}with name to{% endif %} {% if feedback.image_24 %}<img src="{{ feedback.image_24 }}" /> {% endif %}{{ feedback.recipient.real_name }} (<a href="https://{{ slack_user.slack_team.team_name }}.slack.com/messages/@{{ feedback.recipient.name }}/">@{{ feedback.recipient.name }}</a>). <a href="{% url 'single_feedback' feedback.feedback_id %}">View and reply.</a> {% if not feedback.delivered_at %}Not yet delivered. They will see this: {% else %}They see this:{% endif %}</p>
 
       {% include "snippets/feedback_blockquote.html" %}
     {% endfor %}
