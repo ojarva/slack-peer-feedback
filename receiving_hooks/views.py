@@ -59,7 +59,7 @@ def peer_feedback_handler(request):
 
     text = request.POST.get("text").strip()
     if text == "list":
-        feedbacks = Feedback.objects.filter(recipient=feedback_sender).filter(cancelled=False).exclude(delivered_at=None).order_by("delivered_at")[:20]
+        feedbacks = Feedback.objects.filter(recipient=feedback_sender).filter(reply_to=None).filter(cancelled=False).exclude(delivered_at=None).order_by("delivered_at")[:20]
         attachments = []
         for feedback in feedbacks:
             attachments.append({
