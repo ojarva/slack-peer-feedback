@@ -49,6 +49,8 @@ class Command(BaseCommand):
                         }
                     ],
                 })
+                print "Add hint prompt to %s" % user
 
             if len(settings.ONLY_MESSAGES_TO) == 0 or user in settings.ONLY_MESSAGES_TO:
+                print "Sending notification to %s" % user
                 slack.chat.post_message(user, "You have new feedback", attachments=user_data["items"])
