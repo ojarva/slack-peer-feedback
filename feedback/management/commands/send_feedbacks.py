@@ -54,4 +54,4 @@ class Command(BaseCommand):
 
             if len(settings.ONLY_MESSAGES_TO) == 0 or user in settings.ONLY_MESSAGES_TO:
                 print "Sending notification to %s" % user
-                slack.chat.post_message(user, "You have new feedback", attachments=user_data["items"])
+                slack.chat.post_message(user, "You have new feedback", attachments=user_data["items"], icon_emoji=":blue_heart:")

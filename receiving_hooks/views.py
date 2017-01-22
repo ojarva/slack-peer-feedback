@@ -89,9 +89,9 @@ def peer_feedback_handler(request):
         recipients_text = "%s recipients"
 
     if len(feedback) == 0 and len(recipients) > 0:
-        return HttpResponse(json.dumps({"text": "Got it. <%s|Send feedback to %s>. This link is valid for 2 hours." % (get_new_feedback_url(feedback_sender, recipients), ", ".join(map(lambda k: "@" + k[1], recipients)))}), content_type="application/json")
+        return HttpResponse(json.dumps({"text": "Got it. <%s|Send feedback to %s>. This link is valid for 2 hours." % (get_new_feedback_url(feedback_sender, recipients), ", ".join(map(lambda k: "@" + k[1], recipients))), "icon_emoji": ":white_check_mark:"}), content_type="application/json")
     if len(text) == 0:
-        return HttpResponse(json.dumps({"text": "<%s|Send feedback>. This link is valid for 2 hours." % (get_new_feedback_url(feedback_sender, []))}), content_type="application/json")
+        return HttpResponse(json.dumps({"text": "<%s|Send feedback>. This link is valid for 2 hours." % (get_new_feedback_url(feedback_sender, [])), "icon_emoji": ":white_check_mark:"}), content_type="application/json")
 
 
     for recipient in recipients:
@@ -102,7 +102,7 @@ def peer_feedback_handler(request):
             callback_id = "item-" + str(user_feedback.feedback_id)
 
     if len(feedback) > 0 and len(recipients) > 0:
-        return HttpResponse(json.dumps({"text": "Got it. Your feedback will be delivered anonymously to %s" % recipients_text, "attachments": [{
+        return HttpResponse(json.dumps({"text": "Got it. Your feedback will be delivered anonymously to %s" % recipients_text, "icon_emoji": ":white_check_mark:", "attachments": [{
             "text": "%s\n\nThis feedback will be delivered anonymously to %s. Do you want to take any other actions? You can also <%s|view or reply to this feedback>" % (feedback, recipients_text, user_feedback.get_feedback_url()),  # TODO: this is not compatible with giving feedback to multiple users at once.
             "fallback": "Edit your feedback.",
             "callback_id": callback_id,

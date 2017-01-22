@@ -171,8 +171,13 @@ class Feedback(models.Model):
         self.save()
         authorization_data = AuthorizationData.objects.get(team_id=self.recipient.slack_team.team_id)
         slack = slacker.Slacker(authorization_data.bot_access_token)
+        message_text = "You have new feedback"
+        icon_emoji = ":blue_heart:"
+        if self.reply_to:
+            message_text = "You have a reply to your feedback"
+            icon_emoji = ":leftwards_arrow_with_hook:"
         if len(settings.ONLY_MESSAGES_TO) == 0 or self.recipient.user_id in settings.ONLY_MESSAGES_TO:
-            slack.chat.post_message(self.recipient.user_id, "You have new feedback", attachments=[self.get_slack_notification()])
+            slack.chat.post_message(self.recipient.user_id, message_text, attachments=[self.get_slack_notification()], icon_emoji=icon_emoji)
 
     def get_anonymized_recipient_first_name(self):
         if self.anonymous:
