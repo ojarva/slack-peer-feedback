@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}About{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-fork-ribbon-css/0.2.0/gh-fork-ribbon.min.css" />
+<!--[if lt IE 9]>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-fork-ribbon-css/0.2.0/gh-fork-ribbon.ie.min.css" />
+<![endif]-->
+{% endblock %}
+
+{% block content %}
+<h2>Peer feedback</h2>
+
+<p>This small web app &amp; associated Slack bot is trying to help colleagues to give feedback to each other.</p>
+
+<p>You can try following commands in Slack:</p>
+
+<ul>
+  <li><code>/peer_feedback list</code> to see feedback others have given to you.</li>
+  <li><code>/peer_feedback @username Your feedback goes here</code> to directly send feedback to your colleague. By default this feedback is anonymous, and will be delivered with ~10min delay.</li>
+  <li><code>/peer_feedback</code> to get a link to give feedback to any of your colleagues.</li>
+  <li><code>/peer_feedback @username</code> to get a link to give feedback to a specific colleague.</li>
+</ul>
+
+<p>If you want to see feedback others have given to you, <a href="{% url "dashboard" %}">go to dashboard</a>. To see feedback you have sent, go to <a href="{% url "sent_feedback" %}">sent feedback</a>. You can also leave feedback to <a href="{% url "new_feedback" %}">a specific person</a> or if that feels difficult, <a href="{% url "new_feedback_random" %}">to a random colleague with random question</a>.</p>
+
+<p>This service was designed by <a href="mailto:olli@jarva.fi">Olli Jarva</a>. You can contribute to development in <a href="https://github.com/ojarva/slack-peer-feedback">Github</a>.</p>
+
+<a class="github-fork-ribbon right-bottom fixed" href="https://github.com/ojarva/slack-peer-feedback" title="Fork me on GitHub">Fork me on GitHub</a>
+{% endblock %}

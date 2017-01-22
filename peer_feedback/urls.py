@@ -1,4 +1,5 @@
 from django.conf.urls import include, url
+from django.views.generic import TemplateView
 
 from django.contrib import admin
 admin.autodiscover()
@@ -35,4 +36,5 @@ urlpatterns = [
     url(r'^feedback_received$', feedback.views.feedback_received, name='feedback_received'),
     url(r'^$', feedback.views.dashboard, name='dashboard'),
     url(r'^admin/', include(admin.site.urls)),
+    url(r'^about$', TemplateView.as_view(template_name='about.html'), name='about'),
 ]

@@ -53,9 +53,16 @@
           <ul class="nav navbar-nav navbar-right">
             <li><a href="{% url "new_feedback" %}">Give feedback</a></li>
             <li><a href="{% url "sent_feedback" %}">Sent</a></li>
+            <li><a href="{% url "about" %}">About</a></li>
             <li class="dropdown">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{% if slack_user %}{% if slack_user.image_24 %}<img src="{{ slack_user.image_24 }}"> {% endif %}{{ slack_user.real_name }}{% else %}Profile{% endif %} <span class="caret"></span></a>
               <ul class="dropdown-menu">
+                {% if slack_user %}
+                <li><a href="https://{{ slack_user.slack_team.team_name }}.slack.com/team/{{ slack_user.name }}">Profile on Slack</a></li>
+                <li><a href="https://{{ slack_user.slack_team.team_name }}.slack.com/">Your Slack</a></li>
+                <li><a href="https://{{ slack_user.slack_team.team_name }}.slack.com/messages/@peer_feedback/">This bot on Slack</a></li>
+                <li role="separator" class="divider"></li>
+                {% endif %}
                 <li><a href="{% url "logout" %}">Logout</a></li>
               </ul>
             </li>
