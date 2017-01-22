@@ -177,8 +177,8 @@ def leave_new_feedback_page(request, **kwargs):
         return HttpResponseRedirect(reverse("feedback_received"))
 
     if kwargs.get("random"):
-        context["question"] = get_random_question()
         context["recipients"] = [get_random_recipient(request.session.get("team_id"))]
+        context["question"] = get_random_question(context["recipients"][0])
         context["recipient_ids"] = ",".join(map(lambda k: k.user_id, context["recipients"]))
     return render(request, "new_feedback.html", context)
 

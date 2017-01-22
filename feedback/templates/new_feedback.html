@@ -28,7 +28,7 @@
             {% endif %}
           </div>
           <div class="form-group">
-            <label for="feedback_text">{% if question %}{{ question }} <small><a href="{% url 'new_feedback_for_question' question_id %}?without_question=true">Remove this</a></small>{% else %}Your feedback{% endif %}</label>
+            <label for="feedback_text">{% if question %}{{ question }} {% if question_id %}<small><a href="{% url 'new_feedback_for_question' question_id %}?without_question=true">Remove this</a></small>{% endif %}{% else %}Your feedback{% endif %}</label>
             {% if question %}
             <input type="hidden" name="question" value="{{ question }}">
             {% endif %}

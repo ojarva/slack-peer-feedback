@@ -29,16 +29,18 @@ def get_new_feedback_url(sender, recipients):
 
     return "%snew_feedback?%s" % (settings.WEB_ROOT, urllib.urlencode(args))
 
-def get_random_question():
-    return random.choice([
-        "How was the last encounter with this person?",
-        "Do you know what this person is doing?",
-        "Would you like to work with this person? Why and why not?",
-        "What is the best thing about this person?",
-        "What would you like to learn from this person?",
+def get_random_question(recipient):
+    question = random.choice([
+        "How was the last encounter with {recipient.first_name}?",
+        "Do you know what {recipient.first_name} is doing?",
+        "Would you like to work with {recipient.first_name}? Why and why not?",
+        "What is the best thing about {recipient.first_name}?",
+        "What would you like to learn from {recipient.first_name}?",
+        "What would you like to ask from {recipient.first_name}?",
     ])
+    return question.format(recipient=recipient)
 
 def get_random_recipient(team_id):
     slack_team = teams.models.SlackTeam.objects.get(team_id=team_id)
-    active_members = teams.models.SlackUser.objects.filter(slack_team=slack_team).filter(deleted=False).filter(is_bot=False)
+    active_members = teams.models.SlackUser.objects.filter(slack_team=slack_team).filter(deleted=False).filter(is_bot=False).filter(is_restricted=False)
     return active_members[random.randint(0, len(active_members))]
