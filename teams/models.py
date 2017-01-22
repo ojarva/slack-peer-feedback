@@ -140,24 +140,24 @@ class Feedback(models.Model):
             "fallback": "Respond to your feedback.",
             "callback_id": "reply-%s" % self.feedback_id,
             "color": "#3AA3E3",
-            "mrkdwn_in": ["text"],
+            "mrkdwn_in": ["text", "fields"],
             "attachment_type": "default",
             "actions": [
                 {
                     "name": "flag_helpful",
-                    "text": "Send thanks",
+                    "text": "Send thanks :heart:",
                     "type": "button",
                     "value": "flag_helpful"
                 },
                 {
                     "name": "didnt_understand",
-                    "text": "Didn't understand",
+                    "text": "Didn't understand :confused:",
                     "type": "button",
                     "value": "didnt_understand"
                 },
                 {
                     "name": "feedback_received",
-                    "text": "Ok, dismiss.",
+                    "text": "Ok, dismiss. :ok_hand:",
                     "type": "button",
                     "value": "feedback_received"
                 }

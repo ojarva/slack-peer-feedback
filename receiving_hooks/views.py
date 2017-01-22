@@ -72,11 +72,11 @@ def peer_feedback_handler(request):
 
     recipients, feedback = parse_new_feedback_input(text)
     if len(text) > 0 and len(recipients) == 0:
-        return HttpResponse(json.dumps({"text": """Hmm, I couldn't parse the feedback. Use any of these:
-`/peer_feedback @username Your feedback` - directly sends anonymous feedback
-`/peer_feedback @username` - gives a link for more complex feedback
-`/peer_feedback` - gives options for giving more complex feedback for anyone
-`/peer_feedback list` - shows recent feedback you have received.""", "response_type": "ephemeral"}), content_type="application/json")
+        return HttpResponse(json.dumps({"text": """Hmm, I couldn't parse the feedback :tired_face:. Use any of these:
+`/peer_feedback @username Your feedback` - directly sends anonymous feedback :star:
+`/peer_feedback @username` - gives a link to feedback form :link:
+`/peer_feedback` - link to feedback form :link:
+`/peer_feedback list` - shows recent feedback you have received :book:.""", "response_type": "ephemeral", "mrkdwn_in": ["text"]}), content_type="application/json")
 
     callback_id = None
     feedback_group_id = uuid.uuid4()
@@ -89,7 +89,7 @@ def peer_feedback_handler(request):
         recipients_text = "%s recipients"
 
     if len(feedback) == 0 and len(recipients) > 0:
-        return HttpResponse(json.dumps({"text": "Got it. <%s|Send feedback to %s>. This link is valid for 2 hours." % (get_new_feedback_url(feedback_sender, recipients), ", ".join(map(lambda k: "@" + k[1], recipients))), "icon_emoji": ":white_check_mark:"}), content_type="application/json")
+        return HttpResponse(json.dumps({"text": "Got it :+1:. <%s|Send feedback to %s>. This link is valid for 2 hours." % (get_new_feedback_url(feedback_sender, recipients), ", ".join(map(lambda k: "@" + k[1], recipients))), "icon_emoji": ":white_check_mark:"}), content_type="application/json")
     if len(text) == 0:
         return HttpResponse(json.dumps({"text": "<%s|Send feedback>. This link is valid for 2 hours." % (get_new_feedback_url(feedback_sender, [])), "icon_emoji": ":white_check_mark:"}), content_type="application/json")
 
@@ -103,16 +103,16 @@ def peer_feedback_handler(request):
 
     if len(feedback) > 0 and len(recipients) > 0:
         return HttpResponse(json.dumps({"text": "Got it. Your feedback will be delivered anonymously to %s" % recipients_text, "icon_emoji": ":white_check_mark:", "attachments": [{
-            "text": "%s\n\nThis feedback will be delivered anonymously to %s. Do you want to take any other actions? You can also <%s|view or reply to this feedback>" % (feedback, recipients_text, user_feedback.get_feedback_url()),  # TODO: this is not compatible with giving feedback to multiple users at once.
+            "text": "%s\n\nThis feedback will be delivered anonymously to %s :+1:. Do you want to take any other actions? You can also <%s|view or reply to this feedback>" % (feedback, recipients_text, user_feedback.get_feedback_url()),  # TODO: this is not compatible with giving feedback to multiple users at once.
             "fallback": "Edit your feedback.",
             "callback_id": callback_id,
             "color": "#3AA3E3",
             "attachment_type": "default",
-            "mrkdwn_in": ["text"],
+            "mrkdwn_in": ["text", "fields"],
             "actions": [
                 {
                     "name": "add_name",
-                    "text": "Add my name",
+                    "text": ":warning: Add my name",
                     "type": "button",
 					"style": "danger",
                     "value": "add_name",
@@ -125,14 +125,14 @@ def peer_feedback_handler(request):
 				},
                 {
                     "name": "cancel",
-                    "text": "Cancel this feedback",
+                    "text": ":speak_no_evil: Cancel this feedback",
 					"style": "danger",
                     "type": "button",
                     "value": "cancel"
                 },
                 {
                     "name": "done",
-                    "text": "I'm done with this",
+                    "text": ":wave: I'm done with this",
                     "style": "primary",
                     "type": "button",
                     "value": "done"

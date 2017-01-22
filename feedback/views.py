@@ -238,7 +238,7 @@ def receive_interactive_command(request):
         feedback.update(flagged_difficult_to_understand=True)
         response["attachments"] = replace_attachment(response["attachments"], callback_id, {"text": "Ok, thanks for the information! This will be available for the person who gave the feedback for you - hopefully they will clarify what they meant. <%s|View or reply to this feedback>" % (feedback[0].get_feedback_url()), "mrkdwn_in": ["text"]})
     elif requested_action == "feedback_received":
-        response["attachments"] = replace_attachment(response["attachments"], callback_id, {"text": "You can view feedback you have received with `/peer_feedback list`. You can <%s|view or reply to this feedback>" % feedback[0].get_feedback_url(), "mrkdwn_in": ["text"]})
+        response["attachments"] = replace_attachment(response["attachments"], callback_id, {"text": "You can view feedback you have received with `/peer_feedback list` :book:. You can <%s|view or reply to this feedback>" % feedback[0].get_feedback_url(), "mrkdwn_in": ["text"]})
     elif requested_action == "add_name":
         feedback.update(anonymous=False)
         response["attachments"] = replace_attachment(response["attachments"], callback_id, {
