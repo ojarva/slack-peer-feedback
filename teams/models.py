@@ -32,6 +32,7 @@ class SlackUser(models.Model):
     PUBLIC_ATTRIBUTES = ("name", "real_name", "tz", "user_id", "image_192", "image_24")
     is_admin = models.BooleanField(blank=True)
     is_bot = models.BooleanField(blank=True, default=False)
+    is_restricted = models.BooleanField(blank=True, default=False)
     deleted = models.BooleanField(blank=True, default=False)
     name = models.CharField(max_length=50)
     real_name = models.CharField(max_length=500, null=True, blank=True)

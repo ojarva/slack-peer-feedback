@@ -19,6 +19,7 @@ def update_user(user_data):
         "image_192": profile.get("image_192"),
         "image_24": profile.get("image_24"),
         "tz_offset": user_data.get("tz_offset"),
+        "is_restricted": user_data.get("is_restricted", False) or user_data.get("is_ultra_restricted", False),
     }
     SlackUser.objects.update_or_create(user_id=user_data["id"], defaults=data)
 
