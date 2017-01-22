@@ -22,7 +22,7 @@ VERIFICATION_TOKEN = os.environ["VERIFICATION_TOKEN"]
 
 WEB_ROOT = os.environ["WEB_ROOT"]
 
-ONLY_MESSAGES_TO = os.environ.get("ONLY_MESSAGES_TO", "").split(",")
+ONLY_MESSAGES_TO = [a for a in os.environ.get("ONLY_MESSAGES_TO", "").split(",") if len(a) > 0]
 
 # Application definition
 
