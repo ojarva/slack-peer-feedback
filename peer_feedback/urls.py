@@ -30,6 +30,8 @@ urlpatterns = [
     url(r'^sent_feedback$', feedback.views.sent_feedback, name='sent_feedback'),
     url(r'^new_feedback$', feedback.views.leave_new_feedback_page, name='new_feedback'),
     url(r'^new_feedback/random$', feedback.views.leave_new_feedback_page, name='new_feedback_random', kwargs={"random": True}),
+    url(r'^new_feedback/question/(?P<question_id>[0-9A-Fa-f-]{32,36})$', feedback.views.leave_new_feedback_page, name='new_feedback_for_question'),
+    url(r'^api/feedback/dismiss_pending_question/(?P<question_id>[0-9A-Fa-f-]{32,36})$', feedback.views.dismiss_pending_question, name="dismiss_pending_question"),
     url(r'^feedback_received$', feedback.views.feedback_received, name='feedback_received'),
     url(r'^$', feedback.views.dashboard, name='dashboard'),
     url(r'^admin/', include(admin.site.urls)),

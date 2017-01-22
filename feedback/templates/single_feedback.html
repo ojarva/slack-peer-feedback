@@ -4,7 +4,29 @@
 {% block content %}
 {% if not feedbacks.0.anonymous %}
 <div class="row">
-  <p><a class="btn btn-info" href="https://{{ slack_user.slack_team.team_name }}.slack.com/messages/@{{ feedback.0.sender.name }}/">Open a direct messages in Slack</a></p>
+  <div class="col-md-12">
+    <p><a class="btn btn-info" href="https://{{ slack_user.slack_team.team_name }}.slack.com/messages/@{{ feedback.0.sender.name }}/">Open a direct messages in Slack</a></p>
+  </div>
+</div>
+{% endif %}
+{% if not feedbacks.0.delivered %}
+<div class="row">
+  <div class="col-md-12">
+    <form method="post" class="form-inline">
+      {% csrf_token %}
+      <input type="hidden" name="feedback-action">
+      {% if feedbacks.0.anonymous %}
+      <input type="submit" class="btn btn-danger" name="make_non_anonymous" value="Make non-anonymous">
+      {% else %}
+      <input type="submit" class="btn" name="make_anonymous" value="Make anonymous">
+      {% endif %}
+      {% if feedbacks.0.cancelled %}
+      <input type="submit" class="btn" name="undo_cancel" value="Undo cancel">
+      {% else %}
+      <input type="submit" class="btn btn-danger" name="cancel" value="Cancel this feedback">
+      {% endif %}
+    </form>
+  </div>
 </div>
 {% endif %}
 <div class="row">

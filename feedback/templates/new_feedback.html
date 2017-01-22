@@ -16,7 +16,7 @@
 {% endblock %}
 {% block content %}
       <div class="jumbotron">
-        <form method="post" action="{{ actions_url }}">
+        <form method="post">
           {% csrf_token %}
           <div class="form-group">
             {% if recipients %}
@@ -28,7 +28,7 @@
             {% endif %}
           </div>
           <div class="form-group">
-            <label for="feedback_text">{% if question %}{{ question }}{% else %}Your feedback{% endif %}</label>
+            <label for="feedback_text">{% if question %}{{ question }} <small><a href="{% url 'new_feedback_for_question' question_id %}?without_question=true">Remove this</a></small>{% else %}Your feedback{% endif %}</label>
             {% if question %}
             <input type="hidden" name="question" value="{{ question }}">
             {% endif %}

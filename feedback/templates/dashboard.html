@@ -3,6 +3,21 @@
 {% block title %}Dashboard{% endblock %}
 {% block content %}
 
+{% if pending_questions %}
+<div class="row">
+  <div class="col-md-12">
+    <h1>Pending questions</h1>
+    <ul>
+      {% for question in pending_questions %}
+      <li>{{ question.get_random_prompt }} {{ question.feedback_receiver }}: {{ question.question }}
+        <a href="{% url 'new_feedback_for_question' question.sent_question_id %}">Give feedback</a> or
+        <a href="{% url 'dismiss_pending_question' question.sent_question_id %}">dismiss this, I don't want to help {{ question.feedback_receiver.first_name }}</a></li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+{% endif %}
+
 <div class="row">
   <div class="col-md-12">
     <h1>Feedback</h1>

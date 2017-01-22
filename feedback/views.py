@@ -1,11 +1,11 @@
 from django.shortcuts import render
 import pprint
-from django.http import HttpResponse, HttpResponseRedirect, HttpResponseBadRequest, HttpResponseNotFound, HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseBadRequest, HttpResponseNotFound, HttpResponseForbidden, HttpResponseServerError
 from django.core.urlresolvers import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
-from teams.models import SlackUser, Feedback
+from teams.models import SlackUser, Feedback, SentQuestion
 from django.template.loader import render_to_string
 import json
 from utils import verify_arguments, get_random_question, get_random_recipient
@@ -27,14 +27,30 @@ def sent_feedback(request):
     return render(request, "sent_feedback.html", context)
 
 
+def dismiss_pending_question(request, question_id):
+    if not request.session.get("user_id"):
+        return HttpResponseRedirect(reverse("login"))
+    slack_user = SlackUser.objects.get(user_id=request.session.get("user_id"))
+    try:
+        question = SentQuestion.objects.filter(feedback_sender=slack_user).get(sent_question_id=question_id)
+    except SentQuestion.DoesNotExist:
+        return HttpResponseNotFound("Question does not exist.")
+    if not question.answered_at:
+        question.dismissed_at = timezone.now()
+        question.save()
+    return HttpResponseRedirect(reverse("dashboard"))
+
+
 def dashboard(request):
     if not request.session.get("user_id") or request.session.get("authenticated_by") != "slack_login":
         return HttpResponseRedirect(reverse("login"))
     slack_user = SlackUser.objects.get(user_id=request.session.get("user_id"))
     feedbacks = Feedback.objects.filter(recipient=slack_user).filter(cancelled=False).exclude(delivered=None).filter(reply_to=None)
+    pending_questions = SentQuestion.objects.filter(feedback_sender=slack_user).filter(dismissed_at=None).filter(answered_at=None)
     context = {
         "slack_user": slack_user,
         "feedbacks": feedbacks,
+        "pending_questions": pending_questions,
     }
     return render(request, "dashboard.html", context)
 
@@ -48,6 +64,9 @@ def single_feedback(request, feedback_id):
     context = {
         "slack_user": slack_user
     }
+    if feedback.reply_to != None:
+        return HttpResponseForbidden("You can only access parent feedback with this method. Request was for a reply.")
+
     if slack_user == feedback.recipient:
         context["anonymous"] = False
     elif slack_user == feedback.sender:
@@ -55,18 +74,33 @@ def single_feedback(request, feedback_id):
     else:
         return HttpResponseForbidden("This is not your feedback.")
 
-    if feedback.cancelled:
+    if feedback.cancelled and feedback.sender != slack_user:
         return HttpResponseNotFound("Feedback does not exist.")
 
     if request.method == "POST":
-        feedback_text = request.POST.get("feedback")
-        if slack_user == feedback.recipient:
-            feedback_recipient = feedback.sender
+        print request.POST
+        if "feedback-action" in request.POST:
+            if not feedback.delivered:
+                if "make_non_anonymous" in request.POST:
+                    feedback.anonymous = False
+                elif "make_anonymous" in request.POST:
+                    feedback.anonymous = True
+                elif "cancel" in request.POST:
+                    feedback.cancelled = True
+                elif "undo_cancel" in request.POST:
+                    feedback.cancelled = False
+                else:
+                    return HttpResponseServerError("Unhandled feedback action")
+                feedback.save()
         else:
-            feedback_recipient = feedback.recipient
-        feedback_reply = Feedback(feedback=feedback_text, reply_to=feedback, sender=slack_user, recipient=feedback_recipient, anonymous=context["anonymous"])
-        feedback_reply.save()
-        feedback_reply.send_notification()
+            feedback_text = request.POST.get("feedback")
+            if slack_user == feedback.recipient:
+                feedback_recipient = feedback.sender
+            else:
+                feedback_recipient = feedback.recipient
+            feedback_reply = Feedback(feedback=feedback_text, reply_to=feedback, sender=slack_user, recipient=feedback_recipient, anonymous=context["anonymous"])
+            feedback_reply.save()
+            feedback_reply.send_notification()
         return HttpResponseRedirect(reverse("single_feedback", args=(feedback_id,)))
 
     feedbacks = []
@@ -103,6 +137,18 @@ def leave_new_feedback_page(request, **kwargs):
     sender = SlackUser.objects.get(user_id=request.session.get("user_id"))
     context["sender"] = context["slack_user"] = sender
 
+
+    question_id = kwargs.get("question_id")
+    if question_id:
+        question = SentQuestion.objects.get(sent_question_id=question_id)
+        assert question.feedback_sender == sender
+        context["question_id"] = question_id
+        if request.GET.get("without_question") != "true":
+            context["question"] = question.question
+        context["recipients"] = [question.feedback_receiver]
+        context["recipient_ids"] = question.feedback_receiver.user_id
+
+
     if request.method == "POST":
         recipient_ids = request.POST.get("recipient_ids")
         if recipient_ids:
@@ -123,6 +169,11 @@ def leave_new_feedback_page(request, **kwargs):
         for recipient in recipients:
             feedback = Feedback(feedback_group_id=feedback_group_id, recipient=recipient, sender=sender, feedback=request.POST.get("feedback_text"), question=request.POST.get("question"))
             feedback.save()
+        if question_id and question:
+            question.answered_at = timezone.now()
+            if question.dismissed_at:
+                question.dismissed_at = None
+            question.save()
         return HttpResponseRedirect(reverse("feedback_received"))
 
     if kwargs.get("random"):

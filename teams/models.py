@@ -7,6 +7,8 @@ from django.core.urlresolvers import reverse
 from django.utils import timezone
 from oauth_handlers.models import AuthorizationData
 import slacker
+import random
+
 
 class Team(models.Model):
     name = models.CharField(max_length=50)
@@ -65,6 +67,7 @@ class TeamMember(models.Model):
     user = models.ForeignKey("SlackUser")
 
     can_see_feedbacks = models.BooleanField(blank=True, default=False)
+    active = models.BooleanField(blank=True, default=True)
 
     def __unicode__(self):
         return u"@%s in %s" % (self.user, self.team)
@@ -170,6 +173,27 @@ class Feedback(models.Model):
         if len(settings.ONLY_MESSAGES_TO) == 0 or self.recipient.user_id in settings.ONLY_MESSAGES_TO:
             slack.chat.post_message(self.recipient.user_id, "You have new feedback", attachments=[self.get_slack_notification()])
 
+
+class SentQuestion(models.Model):
+    sent_question_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    feedback_sender = models.ForeignKey("SlackUser", related_name="feedback_sender")
+    feedback_receiver = models.ForeignKey("SlackUser", related_name="feedback_receiver")
+    question = models.CharField(max_length=250, null=True, blank=True)
+    sent_at = models.DateTimeField(null=True, blank=True)
+    answered_at = models.DateTimeField(null=True, blank=True, help_text="Timestamp for answering to this feedback prompt.")
+    dismissed_at = models.DateTimeField(null=True, blank=True, help_text="Timestamp for dismissing this feedback prompt.")
+    feedback = models.ForeignKey("Feedback", null=True)
+
+    def __unicode__(self):
+        return u"%s to %s at %s" % (self.feedback_sender, self.feedback_receiver, self.sent_at)
+
+    class Meta:
+        ordering = ("-sent_at",)
+
+    def get_random_prompt(self):
+        return random.choice(("Could you give feedback to",
+                              "Please give feedback to",
+                              "You can help"))
 
 class FeedbackQuestion(models.Model):
     question_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
