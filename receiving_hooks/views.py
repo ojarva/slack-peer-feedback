@@ -13,7 +13,7 @@ from feedback.utils import get_new_feedback_url
 
 
 def parse_new_feedback_input(text):
-    user_re = re.compile(r"^(<@(?P<user_id>[A-Za-z0-9]+)\|(?P<user_name>[A-Za-z0-9-_\.]+)>)(?P<feedback>.*)")
+    user_re = re.compile(r"^(<@(?P<user_id>[A-Za-z0-9]+)\|(?P<user_name>[A-Za-z0-9-_\.]+)>)(?P<feedback>.*)$", re.DOTALL)
     recipients = []
     feedback = text
     while True:
