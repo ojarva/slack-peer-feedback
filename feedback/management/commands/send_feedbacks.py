@@ -50,4 +50,5 @@ class Command(BaseCommand):
                     ],
                 })
 
-            slack.chat.post_message(user, "You have new feedback", attachments=user_data["items"])
+            if len(settings.ONLY_MESSAGES_TO) == 0 or user in settings.ONLY_MESSAGES_TO:
+                slack.chat.post_message(user, "You have new feedback", attachments=user_data["items"])
