@@ -47,6 +47,14 @@ def incoming_slack_event(request):
         return HttpResponse()
 
 
+def get_help_text():
+    return """Use any of these:
+`/peer_feedback @username Your feedback` - directly sends anonymous feedback :star:
+`/peer_feedback @username` - link to feedback form with specific user :link:
+`/peer_feedback` - link to feedback form :link:
+`/peer_feedback list` - shows recent feedback you have received :book:."""
+
+
 @csrf_exempt
 def peer_feedback_handler(request):
     if request.POST.get("token") != settings.VERIFICATION_TOKEN:
@@ -73,14 +81,28 @@ def peer_feedback_handler(request):
             feedback_list_text = "You don't have any feedback - yet."
         response = {"attachments": attachments, "text": feedback_list_text, "response_type": "ephemeral"}
         return HttpResponse(json.dumps(response), content_type="application/json")
+    if text == "list sent":
+        feedbacks = Feedback.objects.filter(sender=feedback_sender).filter(reply_to=None).order_by("given_at")[:20]
+        attachments = []
+        for feedback in feedbacks:
+            attachments.append({
+                "text": """%s\n\nTo %s. <%s|View or reply>""" % (feedback.feedback, feedback.recipient, feedback.get_feedback_url()),
+                "author_name": feedback.get_author_name(),
+                "author_icon": feedback.get_author_icon(),
+                "mrkdwn_in": ["text"],
+            })
+        feedback_list_text = None
+        if len(attachments) == 0:
+            feedback_list_text = "You haven't sent any feedback - yet :unamused:. Check out `/peer_feedback help` to get started."
+        response = {"attachments": attachments, "text": feedback_list_text, "response_type": "ephemeral"}
+        return HttpResponse(json.dumps(response), content_type="application/json")
+
+    if text == "help" or text == "commands":
+        return HttpResponse(json.dumps({"text": get_help_text(), "response_type": "ephemeral", "mrkdwn_in": ["text"]}), content_type="application/json")
 
     recipients, feedback = parse_new_feedback_input(text)
     if len(text) > 0 and len(recipients) == 0:
-        return HttpResponse(json.dumps({"text": """Hmm, I couldn't parse the feedback :tired_face:. Use any of these:
-`/peer_feedback @username Your feedback` - directly sends anonymous feedback :star:
-`/peer_feedback @username` - link to feedback form with specific user :link:
-`/peer_feedback` - link to feedback form :link:
-`/peer_feedback list` - shows recent feedback you have received :book:.""", "response_type": "ephemeral", "mrkdwn_in": ["text"]}), content_type="application/json")
+        return HttpResponse(json.dumps({"text": "Hmm, I couldn't parse the feedback :tired_face:.\n\n" + get_help_text(), "response_type": "ephemeral", "mrkdwn_in": ["text"]}), content_type="application/json")
 
     callback_id = None
     feedback_group_id = uuid.uuid4()
