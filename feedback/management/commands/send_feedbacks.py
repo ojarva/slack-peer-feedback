@@ -33,7 +33,7 @@ class Command(BaseCommand):
         for user, user_data in per_recipient_feedbacks.items():
             slack = slacker.Slacker(user_data["authorization_data"].bot_access_token)
             if user_data["recipient"].show_slash_prompt_hint:
-                user_data["items"].append(object={
+                user_data["items"].append({
                     "text": "You can use `/peer_feedback @username Your feedback message` to send anonymous feedback to your colleagues.",
                     "attachment_type": "default",
                     "color": "#D5D5D5",
