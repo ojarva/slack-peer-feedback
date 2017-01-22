@@ -35,10 +35,7 @@
     <h2>{{ feedbacks.0.question }}</h2>
     {% endif %}
     {% for feedback in feedbacks %}
-      <blockquote class="{% if feedback.sender == slack_user %}blockquote-reverse{% endif %}">
-        <p>{{ feedback.feedback }}</p>
-        <footer>{% if not feedback.anonymous %}<a href="https://{{ slack_user.slack_team.team_name }}.slack.com/messages/@{{ feedback.sender.name }}/">{% if feedback.get_author_icon %}<img src="{{ feedback.get_author_icon}}" />{% endif %}{{ feedback.get_author_name }}</a>{% else %}{% if feedback.sender == slack_user %}You{% else %}{{ feedback.get_author_name}}{% endif %}{% endif %} {{ feedback.given | naturaltime }}</footer>
-      </blockquote>
+      {% include "snippets/feedback_blockquote.html" %}
     {% endfor %}
     <blockquote class="blockquote-reverse">
       <form class="" method="post">

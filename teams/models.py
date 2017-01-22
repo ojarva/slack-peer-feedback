@@ -173,6 +173,12 @@ class Feedback(models.Model):
         if len(settings.ONLY_MESSAGES_TO) == 0 or self.recipient.user_id in settings.ONLY_MESSAGES_TO:
             slack.chat.post_message(self.recipient.user_id, "You have new feedback", attachments=[self.get_slack_notification()])
 
+    def get_anonymized_recipient_first_name(self):
+        if self.anonymous:
+            return "Recipient"
+        return self.recipient.first_name
+
+
 
 class SentQuestion(models.Model):
     sent_question_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
