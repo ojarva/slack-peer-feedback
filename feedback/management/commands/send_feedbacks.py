@@ -38,8 +38,9 @@ class Command(BaseCommand):
                     "attachment_type": "default",
                     "color": "#D5D5D5",
                     "response_type": "ephemeral",
-                    "fallback": "Try /peer_feedback command",
+                    "fallback": "Try /peer_feedback help",
                     "callback_id": "feedback-hint-%s" % uuid.uuid4(),
+                    "mrkdwn_in": ["text"],
                     "actions": [
                         {
                             "name": "do_not_show_slash_hint",
