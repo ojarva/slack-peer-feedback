@@ -9,7 +9,7 @@ All (non-delivered) feedback can be converted to non-anonymous as well. Feedback
 - Create a new [Slack app](https://api.slack.com/apps?new_app=1)
 - Go to "OAuth & Permissions" tab, enter your development environment and production environment URLs
 - Go to "Bot Users" tab, add new bot, enable "Always Show My Bot as Online"
-- Go to "Interactive Messages", enter the URL with `/interactive_message/`
+- Go to "Interactive Messages", enter the URL with `/hooks/interactive_message`
 - Go to "Slash Commands", add new slash command. For example, `/peer_feedback`, "Request URL" `/hooks/peer_feedback_handler`, "Usage hint", `[@username] [feedback_text]`
 - Go to "Event subscriptions", enable, "Request URL" `/hooks/incoming_slack_event`. Add Team Event, `user_change`. Before this, you must have the server up and running with valid SSL cert, and reachable from general internet.
 
