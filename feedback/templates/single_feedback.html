@@ -33,6 +33,9 @@
   <div class="col-md-12">
     {% if feedbacks.0.question %}
     <h2>{{ feedbacks.0.question }}</h2>
+    <p>{% if slack_user == feedbacks.0.sender %}Your feedback to {{ feedbacks.0.recipient }}.{% else %}Feedback to you from your colleague.{% endif %}</p>
+    {% else %}
+    <h2>{% if slack_user == feedbacks.0.sender %}Your feedback to {{ feedbacks.0.recipient }}.{% else %}Feedback to you from your colleague.{% endif %}</h2>
     {% endif %}
     {% for feedback in feedbacks %}
       {% include "snippets/feedback_blockquote.html" %}
