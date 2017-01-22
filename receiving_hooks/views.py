@@ -79,7 +79,7 @@ def peer_feedback_handler(request):
         feedback_list_text = None
         if len(attachments) == 0:
             feedback_list_text = "You don't have any feedback - yet."
-        response = {"attachments": attachments, "text": feedback_list_text, "response_type": "ephemeral"}
+        response = {"attachments": attachments, "text": feedback_list_text, "response_type": "ephemeral", "icon_emoji": ":book:"}
         return HttpResponse(json.dumps(response), content_type="application/json")
     if text == "list sent":
         feedbacks = Feedback.objects.filter(sender=feedback_sender).filter(reply_to=None).order_by("given_at")[:20]
@@ -94,7 +94,7 @@ def peer_feedback_handler(request):
         feedback_list_text = None
         if len(attachments) == 0:
             feedback_list_text = "You haven't sent any feedback - yet :unamused:. Check out `/peer_feedback help` to get started."
-        response = {"attachments": attachments, "text": feedback_list_text, "response_type": "ephemeral"}
+        response = {"attachments": attachments, "text": feedback_list_text, "response_type": "ephemeral", "icon_emoji": ":book:"}
         return HttpResponse(json.dumps(response), content_type="application/json")
 
     if text == "help" or text == "commands":
