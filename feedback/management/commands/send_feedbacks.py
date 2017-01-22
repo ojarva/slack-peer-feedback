@@ -19,7 +19,7 @@ class Command(BaseCommand):
         per_recipient_feedbacks = {}
 
         for feedback in Feedback.objects.filter(delivered_at=None).filter(cancelled=False):
-            if now - feedback.given_at > datetime.timedelta(minutes=0):
+            if now - feedback.given_at > datetime.timedelta(minutes=settings.FEEDBACK_DELAY_MINUTES):
                 recipient_id = feedback.recipient.user_id
                 if recipient_id not in per_recipient_feedbacks:
                     authorization_data = AuthorizationData.objects.get(team_id=feedback.recipient.slack_team.team_id)
