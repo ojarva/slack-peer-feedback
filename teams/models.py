@@ -180,7 +180,6 @@ class Feedback(models.Model):
         return self.recipient.first_name
 
 
-
 class SentQuestion(models.Model):
     sent_question_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     feedback_sender = models.ForeignKey("SlackUser", related_name="feedback_sender")
