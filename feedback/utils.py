@@ -4,6 +4,7 @@ import slacker
 import hashlib
 from django.conf import settings
 from django.utils import timezone
+from django.core.urlresolvers import reverse
 import datetime
 import urllib
 import random
@@ -27,7 +28,7 @@ def get_new_feedback_url(sender, recipients):
     }
     args["token"] = hash_arguments(args)
 
-    return "%snew_feedback?%s" % (settings.WEB_ROOT, urllib.urlencode(args))
+    return "%s%s?%s" % (settings.WEB_ROOT.strip("/"), reverse("new_feedback"), urllib.urlencode(args))
 
 def get_random_question(recipient):
     question = random.choice([
