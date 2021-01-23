@@ -21,10 +21,10 @@ def verify_arguments(args, token):
 
 def get_new_feedback_url(sender, recipients):
     args = {
-        u"sender_id": sender.user_id,
-        u"sender_team_id": sender.slack_team.team_id,
-        u"recipients": u",".join(map(lambda k: k[0], recipients)),
-        u"expires_at": unicode(timezone.now() + datetime.timedelta(hours=2)),
+        "sender_id": sender.user_id,
+        "sender_team_id": sender.slack_team.team_id,
+        "recipients": ",".join(map(lambda k: k[0], recipients)),
+        "expires_at": str(timezone.now() + datetime.timedelta(hours=2)),
     }
     args["token"] = hash_arguments(args)
 

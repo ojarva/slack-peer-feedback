@@ -18,14 +18,14 @@ class Team(models.Model):
     class Meta:
         unique_together = (("name", "slack_team"), )
 
-    def __unicode__(self):
-        return u"%s (@%s)" % (self.name, self.owner.name)
+    def __str__(self):
+        return f"{self.name} (@{self.owner.name})"
 
 class SlackTeam(models.Model):
     team_id = models.CharField(max_length=50)
     team_name = models.CharField(max_length=50)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.team_name
 
 class SlackUser(models.Model):
@@ -48,8 +48,8 @@ class SlackUser(models.Model):
 
     show_slash_prompt_hint = models.BooleanField(blank=True, default=False)
 
-    def __unicode__(self):
-        return u"%s (@%s)" % (self.real_name, self.name)
+    def __str__(self):
+        return f"{self.real_name} (@{self.name})"
 
     def to_public_json(self):
         data = {}
@@ -58,7 +58,7 @@ class SlackUser(models.Model):
         return data
 
     def get_full_name(self):
-        return u"%s (@%s)" % (self.real_name, self.name)
+        return f"{self.real_name} (@{self.name})"
 
     class Meta:
         ordering = (("real_name", "name"))
@@ -70,8 +70,8 @@ class TeamMember(models.Model):
     can_see_feedbacks = models.BooleanField(blank=True, default=False)
     active = models.BooleanField(blank=True, default=True)
 
-    def __unicode__(self):
-        return u"@%s in %s" % (self.user, self.team)
+    def __str__(self):
+        return f"@{self.user} in {self.team}"
 
 
 class Feedback(models.Model):
@@ -103,16 +103,16 @@ class Feedback(models.Model):
     class Meta:
         ordering = ("-given_at", )
 
-    def __unicode__(self):
-        return u"Feedback for %s by %s" % (self.recipient, self.get_author_name())
+    def __str__(self):
+        return f"Feedback for {self.recipient} by {self.get_author_name()}"
 
     def get_replies_count(self):
         return Feedback.objects.filter(feedback_id=self.reply_to).count()
 
     def get_author_name(self):
         if self.anonymous:
-            return u"Anonymous colleague"
-        return u"%s (@%s)" % (self.sender.real_name, self.sender.name)
+            return "Anonymous colleague"
+        return f"{self.sender.real_name} (@{self.sender.name})"
 
     def get_author_icon(self):
         if self.anonymous:
@@ -195,8 +195,8 @@ class SentQuestion(models.Model):
     dismissed_at = models.DateTimeField(null=True, blank=True, help_text="Timestamp for dismissing this feedback prompt.")
     feedback = models.ForeignKey("Feedback", null=True)
 
-    def __unicode__(self):
-        return u"%s to %s at %s" % (self.feedback_sender, self.feedback_receiver, self.sent_at)
+    def __str__(self):
+        return f"{self.feedback_sender} to {self.feedback_receiver} at {self.sent_at}"
 
     class Meta:
         ordering = ("-sent_at",)
@@ -215,5 +215,5 @@ class FeedbackQuestion(models.Model):
 
     team = models.ForeignKey("Team", null=True, blank=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.question_text
